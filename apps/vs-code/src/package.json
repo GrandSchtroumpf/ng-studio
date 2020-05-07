@@ -1,0 +1,26 @@
+{
+  "name": "ng-studio",
+  "displayName": "Angular Studio",
+  "version": "0.0.0",
+  "main": "main.js",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.44.0"
+  },
+  "keywords": [],
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:ngStudio.start"
+  ],
+  "contributes": {
+    "commands": [{
+      "command": "ngStudio.start",
+      "title": "Start"
+    }],
+    "configuration": {
+      "title": "Ng Studio"
+    }
+  }
+}
