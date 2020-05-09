@@ -35,6 +35,9 @@
     "editor-e2e": {
       "tags": [],
       "implicitDependencies": ["editor"]
+    },
+    "ng-morph": {
+      "tags": []
     }
   }
 }
