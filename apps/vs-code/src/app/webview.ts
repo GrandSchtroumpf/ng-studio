@@ -1,60 +1,42 @@
 import { window, ViewColumn, Uri, Webview } from 'vscode';
+import { promises as fs, watch } from 'fs';
 import { join } from 'path';
+import { environment } from '../environments/environment';
 
-const webviewPath = 'studio';
-
-export function createWebiew(extensionPath: string) {
+export function createWebview(extensionPath: string, name: string, column: ViewColumn) {
   const panel = window.createWebviewPanel(
-    'studio', // Identifies the type of the webview. Used internally
-    'Studio', // Title of the panel displayed to the user
-    ViewColumn.Active, // Editor column to show the new webview panel in.
+    name,
+    name,
+    column,
     {
-      retainContextWhenHidden: true,
       enableScripts: true,
-      localResourceRoots: [Uri.file(join(extensionPath, webviewPath))]
+      localResourceRoots: [Uri.file(join(extensionPath, name))]
+    });
+  
+  const index = join(extensionPath, name, 'index.html');
+  
+  const matchLinks = /(href|src)="([^"]*)"/g;
+  const toUri = (_, prefix: 'href' | 'src', link: string) => {
+    // For <base href="#" />
+    if (link === '#') {
+      return `${prefix}="${link}"`;
     }
-  );
-
-  // HTML
-  panel.webview.html = getIframeHtml(panel.webview, extensionPath);
-  return panel;
-}
-
-/** 
- * Create an Iframe HTML with correct links
- */
-function getIframeHtml(webview: Webview, extensionPath: string) {
-  const getUri = (fileName: string) => {
-    const uri = Uri.file(join(extensionPath, webviewPath, fileName));
-    return webview['asWebviewUri'](uri);
+    // For scripts & links
+    const path = join(extensionPath, name, link);
+    const uri = Uri.file(path);
+    return `${prefix}="${panel.webview['asWebviewUri'](uri)}"`;
+  };
+  
+  // Refresh the webview on update from the code
+  const updateWebview = async () => {
+    const html = await fs.readFile(index, 'utf-8');
+    panel.webview.html = html.replace(matchLinks, toUri);
   }
-
-  // Style
-  const linkNames = ['styles'];
-  const links = linkNames.map(link => `<link rel="stylesheet" href="${getUri(`${link}.css`)}">`);
-
-  // Script
-  const scriptNames = ['runtime', 'polyfills', 'main'];
-  const scripts = scriptNames.map(script => `<script src="${getUri(`${script}.js`)}" type="module"></script>`);
-
-  // HTML
-  return `<!DOCTYPE html>
-  <html lang="en">
   
-  <head>
-    <meta charset="utf-8" />
-    <title>Studio</title>
-    <base href="/" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" type="image/x-icon" href="favicon.ico" />
-    ${links.join('')}
-  </head>
-  
-  <body>
-    <h1>Hello World</h1>
-    <studio-root></studio-root>
-    ${scripts.join('')}
-  </body>
-  
-  </html>`
+  // If dev mode update on change
+  if (!environment.production) {
+    watch(index).on('change', updateWebview)
+  }
+  updateWebview();
+  return panel;
 }

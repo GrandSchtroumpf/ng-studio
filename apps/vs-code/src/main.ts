@@ -1,21 +1,13 @@
-import { commands, ExtensionContext, window } from 'vscode';
-import { createWebiew } from './app/webview';
+import { commands, ExtensionContext, ViewColumn } from 'vscode';
+import { createWebview } from './app/webview';
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
+// On activation
 export function activate(context: ExtensionContext) {
-
-  commands.registerCommand('start', () => {
-    window.showInformationMessage('Hello World');
+  // Register command "start" 
+  commands.registerCommand('start', async () => {
+    const builder = createWebview(context.extensionPath, 'builder', ViewColumn.One);
+    const editor = createWebview(context.extensionPath, 'editor', ViewColumn.Two);
+    context.subscriptions.push(builder);
+    context.subscriptions.push(editor);
   })
-
-	// Commands
-	commands.registerCommand('ngStudio.start', () => {
-    const webviewPanel = createWebiew(context.extensionPath);
-    context.subscriptions.push(webviewPanel);
-  })
-
 }
-
-// this method is called when your extension is deactivated
-export function deactivate() {}

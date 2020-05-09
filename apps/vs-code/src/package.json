@@ -12,11 +12,11 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:ngStudio.start"
+    "onCommand:start"
   ],
   "contributes": {
     "commands": [{
-      "command": "ngStudio.start",
+      "command": "start",
       "title": "Start"
     }],
     "configuration": {

@@ -22,12 +22,19 @@
     "vs-code": {
       "tags": []
     },
-    "studio": {
+    "builder": {
       "tags": []
     },
-    "studio-e2e": {
+    "builder-e2e": {
       "tags": [],
-      "implicitDependencies": ["studio"]
+      "implicitDependencies": ["builder"]
+    },
+    "editor": {
+      "tags": []
+    },
+    "editor-e2e": {
+      "tags": [],
+      "implicitDependencies": ["editor"]
     }
   }
 }
