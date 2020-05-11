@@ -1,1 +1,53 @@
-<h1>Coucou Camille</h1>
+<!--
+  <ng-container *ngIf="file$ |async as file">
+    <header>
+      <h1>{{ file.name }}</h1>
+    </header>
+    <ul *ngFor="let decorator of file.decorators">
+      <h3>{{ decorator.name }}</h3>
+      <ng-container  *ngFor="let arg of decorator.arguments">
+        <ng-template [ngTemplateOutlet]="structure" [ngTemplateOutletContext]="{ $implicit: arg }"></ng-template>
+      </ng-container>
+    </ul>
+    <ul>
+      <h3>Properties</h3>
+      <li *ngFor="let property of file.properties">
+        {{ property.name }}
+      </li>
+      <h3>Methods</h3>
+      <li *ngFor="let method of file.methods">
+        {{ method.name }}
+      </li>
+    </ul>
+  </ng-container>
+  
+  <ng-template #structure let-node>
+    <ng-container [ngSwitch]="node.kind">
+      <ng-container *ngSwitchCase="'StringLiteral' | kind">
+        <span>'{{ node.value }}'</span>
+      </ng-container>
+      <ng-container *ngSwitchCase="'Identifier' | kind">
+        <code>{{ node.value }}</code>
+      </ng-container>
+      <ng-container *ngSwitchCase="'ArrayLiteralExpression' | kind">
+        <ul>
+          <li *ngFor="let element of node.elements">
+            <ng-template [ngTemplateOutlet]="structure" [ngTemplateOutletContext]="{ $implicit: element }"></ng-template>
+          </li>
+        </ul>
+      </ng-container>
+      <ng-container *ngSwitchCase="'ObjectLiteralExpression' | kind">
+        <ul>
+          <li *ngFor="let property of node.properties">
+            <ng-template [ngTemplateOutlet]="structure" [ngTemplateOutletContext]="{ $implicit: property.key }"></ng-template>:
+            <ng-template [ngTemplateOutlet]="structure" [ngTemplateOutletContext]="{ $implicit: property.value }"></ng-template>
+          </li>
+        </ul>
+      </ng-container>
+    </ng-container>
+  </ng-template>
+-->
+<h1>Welcome World</h1>
+<ng-container *ngIf="file$ | async as file">
+  {{ file | json }}
+</ng-container>

@@ -1,19 +1,29 @@
 import { Component } from '@angular/core';
-import { DecoratorStructure, StructureKind } from 'ts-morph';
+import { ClassDeclarationStructure, DecoratorStructure, StructureKind } from 'ts-morph';
+
+export function isComponent(decorator: DecoratorStructure) {
+  return decorator.name === 'Component';
+}
+
+/** Transform a decorator into a component decorator */
+export const toComponent = (structure: ClassDeclarationStructure) => ({
+  ...structure,
+  config: JSON.parse(structure.decorators[0]?.arguments[0])
+});
 
 
-const componentDecorator = (component: Component): DecoratorStructure => ({
+export const componentDecorator = (component: Component): DecoratorStructure => ({
   kind: StructureKind.Decorator,
   name: 'Component',
-  arguments: [JSON.stringify(component)]
+  arguments: []
 })
 
-const inputDecorator = (): DecoratorStructure => ({
+export const inputDecorator = (): DecoratorStructure => ({
   kind: StructureKind.Decorator,
   name: 'Input',
 })
 
-const viewChildDecorator = (): DecoratorStructure => ({
+export const viewChildDecorator = (): DecoratorStructure => ({
   kind: StructureKind.Decorator,
   name: 'ViewChild',
 })

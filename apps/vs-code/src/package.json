@@ -12,13 +12,30 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:start"
+    "onCommand:ngStudio.start",
+    "onView:ngTree"
   ],
   "contributes": {
+    "viewsContainers": {
+			"activitybar": [{
+        "id": "ng-tree",
+        "title": "Angular Tree",
+        "icon": "assets/copy.svg"
+      }]
+		},
+		"views": {
+			"ng-tree": [{
+        "id": "ngTree",
+        "name": "Angular Tree"
+      }]
+		},
     "commands": [{
-      "command": "start",
+      "command": "ngStudio.start",
       "title": "Start"
-    }],
+    }, {
+      "command": "ngStudio.select",
+      "title": "Select"
+    }] ,
     "configuration": {
       "title": "Ng Studio"
     }

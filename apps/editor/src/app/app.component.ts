@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { VscodeService } from './vscode.service';
 
 @Component({
   selector: 'ng-studio-root',
@@ -6,5 +7,6 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  title = 'editor';
+  file$ = this.vscode.file$;
+  constructor(private vscode: VscodeService) {}
 }
