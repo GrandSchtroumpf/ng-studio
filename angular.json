@@ -338,13 +338,136 @@
             "jestConfig": "libs/ng-morph/jest.config.js",
             "tsConfig": "libs/ng-morph/tsconfig.spec.json",
             "passWithNoTests": true,
-            "setupFile": "libs/ng-morph/src/test-setup.ts"
+            "setupFile": "libs/ng-morph/test-setup.ts"
           }
         }
       },
       "schematics": {
         "@nrwl/angular:component": {
           "style": "scss"
+        }
+      }
+    },
+    "inspector": {
+      "projectType": "application",
+      "schematics": {
+        "@nrwl/angular:component": {
+          "style": "scss"
+        }
+      },
+      "root": "apps/inspector",
+      "sourceRoot": "apps/inspector/src",
+      "prefix": "ng-studio",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:browser",
+          "options": {
+            "outputPath": "dist/apps/inspector",
+            "index": "apps/inspector/src/index.html",
+            "main": "apps/inspector/src/main.ts",
+            "polyfills": "apps/inspector/src/polyfills.ts",
+            "tsConfig": "apps/inspector/tsconfig.app.json",
+            "aot": true,
+            "assets": [
+              "apps/inspector/src/favicon.ico",
+              "apps/inspector/src/assets"
+            ],
+            "styles": ["apps/inspector/src/styles.scss"],
+            "scripts": []
+          },
+          "configurations": {
+            "production": {
+              "fileReplacements": [
+                {
+                  "replace": "apps/inspector/src/environments/environment.ts",
+                  "with": "apps/inspector/src/environments/environment.prod.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "extractCss": true,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "buildOptimizer": true,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb",
+                  "maximumError": "10kb"
+                }
+              ]
+            }
+          }
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "browserTarget": "inspector:build"
+          },
+          "configurations": {
+            "production": {
+              "browserTarget": "inspector:build:production"
+            }
+          }
+        },
+        "extract-i18n": {
+          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "options": {
+            "browserTarget": "inspector:build"
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "apps/inspector/tsconfig.app.json",
+              "apps/inspector/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**", "!apps/inspector/**"]
+          }
+        },
+        "test": {
+          "builder": "@nrwl/jest:jest",
+          "options": {
+            "jestConfig": "apps/inspector/jest.config.js",
+            "tsConfig": "apps/inspector/tsconfig.spec.json",
+            "passWithNoTests": true,
+            "setupFile": "apps/inspector/src/test-setup.ts"
+          }
+        }
+      }
+    },
+    "inspector-e2e": {
+      "root": "apps/inspector-e2e",
+      "sourceRoot": "apps/inspector-e2e/src",
+      "projectType": "application",
+      "architect": {
+        "e2e": {
+          "builder": "@nrwl/cypress:cypress",
+          "options": {
+            "cypressConfig": "apps/inspector-e2e/cypress.json",
+            "tsConfig": "apps/inspector-e2e/tsconfig.e2e.json",
+            "devServerTarget": "inspector:serve"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "inspector:serve:production"
+            }
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": ["apps/inspector-e2e/tsconfig.e2e.json"],
+            "exclude": ["**/node_modules/**", "!apps/inspector-e2e/**"]
+          }
         }
       }
     }

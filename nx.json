@@ -38,6 +38,13 @@
     },
     "ng-morph": {
       "tags": []
+    },
+    "inspector": {
+      "tags": []
+    },
+    "inspector-e2e": {
+      "tags": [],
+      "implicitDependencies": ["inspector"]
     }
   }
 }

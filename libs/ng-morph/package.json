@@ -1,7 +1,8 @@
 {
-  "name": "@ng-studio/ng-morph",
+  "name": "ng-morph",
   "version": "0.0.1",
   "peerDependencies": {
+    "@angular/compiler": "^9.1.0",
     "@angular/common": "^9.1.0",
     "@angular/core": "^9.1.0",
     "tslib": "^1.10.0"

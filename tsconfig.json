@@ -16,7 +16,8 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "ng-morph": ["libs/ng-morph/src/index.ts"]
+      "ng-morph": ["libs/ng-morph/src/index.ts"],
+      "ng-morph/*": ["libs/ng-morph/*"],
     }
   },
   "exclude": ["node_modules", "tmp"]

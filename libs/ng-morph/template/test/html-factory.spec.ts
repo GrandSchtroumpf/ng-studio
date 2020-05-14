@@ -1,6 +1,6 @@
 import { Element, Text, Template, Variable, Content, Reference } from '@angular/compiler/src/render3/r3_ast';
-import * as factory from '../lib/html/factory';
-import * as printer from '../lib/html/print';
+import * as factory from '../factory';
+import * as printer from '../print';
 
 describe('HTML Factory', () => {
 
@@ -92,4 +92,5 @@ describe('HTML Factory', () => {
     expect(node.selector).toBe('*');
     expect(code).toBe('<ng-content></ng-content>')
   });
+
 })

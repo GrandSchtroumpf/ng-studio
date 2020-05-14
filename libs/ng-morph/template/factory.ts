@@ -1,5 +1,5 @@
 import * as ng from '@angular/compiler/src/render3/r3_ast';
-import { BindingType, ASTWithSource, PropertyRead } from '@angular/compiler';
+import { BindingType } from '@angular/compiler';
 import { SecurityContext } from '@angular/compiler/src/core';
 import { Message, Node as i18nNode } from '@angular/compiler/src/i18n/i18n_ast';
 import { isElement } from './helpers';
@@ -16,11 +16,6 @@ const parser = new Parser(lexer);
 export function createAstWithSource(source: string) {
   return parser.parseSimpleBinding(source, undefined, undefined);
 }
-
-export function createPropertyRead(name: string) {
-  return new PropertyRead(undefined, undefined, undefined, name);
-}
-
 
 
 //////////

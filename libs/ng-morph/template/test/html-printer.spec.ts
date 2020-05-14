@@ -1,5 +1,5 @@
 import { parseTemplate } from '@angular/compiler';
-import * as printer from '../lib/html/print';
+import * as printer from '../print';
 
 describe('Parse HTML', () => {
   function testPrint(title: string, { original, result }) {
