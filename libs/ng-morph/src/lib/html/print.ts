@@ -1,6 +1,6 @@
-import { Element, Node, Template, Text, TextAttribute, BoundAttribute, BoundEvent, Reference, BoundText } from '@angular/compiler/src/render3/r3_ast';
+import { Element, Node, Template, Text, TextAttribute, BoundAttribute, BoundEvent, Reference, BoundText, Variable, Content } from '@angular/compiler/src/render3/r3_ast';
 import { parseTemplate, ASTWithSource, AST } from '@angular/compiler';
-import { isElement, isTemplate, isText, isBoundText } from './helpers';
+import { isElement, isTemplate, isText, isBoundText, isContent } from './helpers';
 
 const selfClosing = ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr'];
 export function isSelfClosing(name: string) {
@@ -19,6 +19,9 @@ export function printNode(node: Node): string {
   }
   if (isTemplate(node)) {
     return printTemplate(node);
+  }
+  if (isContent(node)) {
+    return printContent(node);
   }
   if (isText(node)) {
     return printText(node);
@@ -115,25 +118,43 @@ export function printReference(node: Reference) {
 //////////////
 
 export function printTemplate(node: Template) {
-  return node.templateAttrs.length
-    ? printTemplateWithAttr(node)
-    : printTemplateWithoutAttr(node);
+  return node.tagName === 'ng-template'
+    ? printNgTemplate(node)
+    : printStructuralDirective(node);
 }
 
-export function printTemplateWithoutAttr(node: Template) {
+
+export function printNgTemplate(node: Template) {
   const tagName = node.tagName;
-  const variables = node.variables.map(({name, value}) => value ? `let-${name}="${value}"` : `let-${name}`).join(' ');
+  const variables = node.variables.map(variable => printVariable(variable)).join(' ');
   const children = node.children.map(child => printNode(child)).join('');
   const tag = [tagName, variables].filter(v => !!v).join(' ');
   return `<${tag}>${children}</${tagName}>`
 }
 
-export function printTemplateWithAttr(node: Template) {
+
+export function printVariable(node: Variable) {
+  return node.value
+    ? `let-${node.name}="${node.value}"`
+    : `let-${node.name}`;
+}
+
+export function printStructuralDirective(node: Template) {
+  const child = node.children.find(el => isElement(el) && el.name === node.tagName) as Element;
+  if (!node.templateAttrs?.length) {
+    return printNode(child);
+  } else {
     // Transform a template Attributes into
     const attribut = getMicroSynthax(node);
-    const child = node.children.find(el => isElement(el) && el.name === node.tagName) as Element;
     child.attributes.unshift(attribut);
     return printNode(child);
+  }
+}
+
+export function printStructuralVariable(node: Variable) {
+  return (node.value === '$implicit')
+    ? `let ${node.name}`
+    : `let ${node.name} = ${node.value}`;
 }
 
 export function getSuffix(name: string, prefix: string) {
@@ -189,4 +210,15 @@ export function getMicroSynthax(node: Template) {
     name: `*${prefix}`,
     value: expression
   } as TextAttribute;
+}
+
+/////////////
+// CONTENT //
+/////////////
+
+export function printContent(node: Content) {
+  const attributes = node.attributes.map(attr => printAttribute(attr)).join(' ');
+  const name = 'ng-content';
+  const tag = [name, attributes].filter(v => !!v).join(' ');
+  return `<${tag}></${name}>`
 }

@@ -1,7 +1,7 @@
 import { parseTemplate } from '@angular/compiler';
 import * as printer from '../lib/html/print';
 
-describe('HTML', () => {
+describe('Parse HTML', () => {
   function testPrint(title: string, { original, result }) {
     test(title, (done) => {
       const node = parseTemplate(original, 'template.html');
@@ -76,4 +76,17 @@ describe('HTML', () => {
       result: `<div [ngSwitch]="name"><div *ngSwitchCase="'grandschtroumpf'">Hello</div><div *ngSwitchDefault>Default</div></div>`
     });
   });
+
+  describe('Content', () => {
+    testPrint('Content without select', {
+      original: '<ng-content></ng-content>',
+      result: '<ng-content></ng-content>'
+    });
+
+    testPrint('Content with select', {
+      original: '<ng-content select="[slot][two]"></ng-content>',
+      result: '<ng-content select="[slot][two]"></ng-content>'
+    });
+
+  })
 });

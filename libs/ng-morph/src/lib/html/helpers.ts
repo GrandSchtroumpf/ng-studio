@@ -1,4 +1,4 @@
-import { Element, Node, Template, Text, TextAttribute, BoundAttribute, BoundEvent, Reference, BoundText } from '@angular/compiler/src/render3/r3_ast';
+import { Element, Node, Template, Text, TextAttribute, BoundAttribute, BoundEvent, Reference, BoundText, Content } from '@angular/compiler/src/render3/r3_ast';
 import { AST } from '@angular/compiler';
 
 export function isElement(node: Node): node is Element {
@@ -7,6 +7,10 @@ export function isElement(node: Node): node is Element {
 
 export function isTemplate(node: Node): node is Template {
   return 'tagName' in node;
+}
+
+export function isContent(node: Node): node is Content {
+  return 'selector' in node && 'attributes' in node;
 }
 
 export function isBoundText(node: Node): node is BoundText {
