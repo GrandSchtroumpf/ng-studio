@@ -307,8 +307,8 @@
     "ng-morph": {
       "projectType": "library",
       "root": "libs/ng-morph",
-      "sourceRoot": "libs/ng-morph/src",
-      "prefix": "ng-studio",
+      "sourceRoot": "libs/ng-morph",
+      "prefix": "ng-morph",
       "architect": {
         "build": {
           "builder": "@nrwl/angular:package",
