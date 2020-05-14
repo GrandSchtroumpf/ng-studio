@@ -17,9 +17,9 @@ describe('HTML', () => {
       result: '<h1>Hello World</h1>'
     });
 
-    testPrint('refs > attr > inputs > outputs', {
-      original: '<h1 (click)="method()" opened [key]="property" #ref name="myName"></h1>',
-      result: '<h1 #ref opened name="myName" [key]="property" (click)="method()"></h1>'
+    testPrint('children', {
+      original: '<header> <h1>Hello World</h1> </header>',
+      result: '<header><h1>Hello World</h1></header>'
     });
 
     testPrint('self-closing & ref with value', {
@@ -27,9 +27,26 @@ describe('HTML', () => {
       result: '<img #ref="myRef" />'
     });
 
-    testPrint('children', {
-      original: '<header> <h1>Hello World</h1> </header>',
-      result: '<header><h1>Hello World</h1></header>'
+    testPrint('refs > attr > inputs > outputs', {
+      original: '<h1 (click)="method()" opened [key]="property" #ref name="myName"></h1>',
+      result: '<h1 #ref opened name="myName" [key]="property" (click)="method()"></h1>'
+    });
+
+    testPrint('Two way binding', {
+      original: '<input (dateChange)="setDate($event)" [date]="date"  placeholder="Date picker" [(ngModel)]="text"  >',
+      result: '<input [(ngModel)]="text" placeholder="Date picker" [date]="date" (dateChange)="setDate($event)" />'
+    });
+
+  });
+
+  describe('Text', () => {
+    testPrint('Bound text', {
+      original: '<h1>{{user$ | async}}</h1>',
+      result: '<h1>{{user$ | async}}</h1>'
+    });
+    testPrint('Bound text inside with text', {
+      original: '<h1>Start: {{event.start | date}}, end: {{event.end | date}}</h1>',
+      result: '<h1>Start: {{event.start | date}}, end: {{event.end | date}}</h1>'
     });
   })
 

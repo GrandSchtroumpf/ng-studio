@@ -1,6 +1,6 @@
-import { Element, Node, Template, Text, TextAttribute, BoundAttribute, BoundEvent, Reference } from '@angular/compiler/src/render3/r3_ast';
+import { Element, Node, Template, Text, TextAttribute, BoundAttribute, BoundEvent, Reference, BoundText } from '@angular/compiler/src/render3/r3_ast';
 import { parseTemplate, ASTWithSource, AST } from '@angular/compiler';
-import { isElement, isTemplate, isText } from './helpers';
+import { isElement, isTemplate, isText, isBoundText } from './helpers';
 
 const selfClosing = ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr'];
 export function isSelfClosing(name: string) {
@@ -23,6 +23,9 @@ export function printNode(node: Node): string {
   if (isText(node)) {
     return printText(node);
   }
+  if (isBoundText(node)) {
+    return printBoundText(node);
+  }
   return '';
 }
 
@@ -37,9 +40,16 @@ export function printAstWithSource(node: ASTWithSource) {
   return node.source;
 }
 
+//////////
+// TEXT //
+//////////
 
 export function printText(node: Text) {
   return node.value;
+}
+
+export function printBoundText(node: BoundText) {
+  return printAst(node.value);
 }
 
 
@@ -48,13 +58,15 @@ export function printText(node: Text) {
 /////////////
 
 export function printElement(node: Element) {
+  // Important: Mutable function that should be before input/output
+  const twoWayBinding = printTwoWayBinding(node);
   const name = node.name;
   const refs = node.references.map(ref => printReference(ref)).join(' ');
   const attr = node.attributes.map(attribute => printAttribute(attribute)).join(' ');
   const inputs = node.inputs.map(input => printInput(input)).join(' ');
   const outputs = node.outputs.map(output => printOutput(output)).join(' ');
   const children = node.children.map(child => printNode(child)).join('');
-  const tag = [name, refs, attr, inputs, outputs].filter(v => !!v).join(' ');
+  const tag = [name, refs, twoWayBinding, attr, inputs, outputs].filter(v => !!v).join(' ');
   return isSelfClosing(name)
     ? `<${tag} />`
     : `<${tag}>${children}</${name}>`;
@@ -62,6 +74,25 @@ export function printElement(node: Element) {
 
 export function printAttribute(node: TextAttribute) {
   return node.value ? `${node.name}="${node.value}"` : node.name;
+}
+
+/** Find two way bindings & remove them from input/output */
+export function printTwoWayBinding(node: Element) {
+  const binding = [];
+  node.inputs.forEach((input, i) => {
+    node.outputs.forEach((output, j) => {
+      if (output.name === `${input.name}Change`) {
+        const outputHandler = printAst(output.handler);
+        const inputValue = printAst(input.value);
+        if (outputHandler === `${inputValue}=$event`) {
+          binding.push(`[(${input.name})]="${inputValue}"`);
+          node.inputs.splice(i, 1);
+          node.outputs.splice(j, 1);
+        }
+      }
+    })
+  });
+  return binding.join(' ');
 }
 
 export function printInput(node: BoundAttribute) {
