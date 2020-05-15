@@ -45,6 +45,9 @@
     "inspector-e2e": {
       "tags": [],
       "implicitDependencies": ["inspector"]
+    },
+    "ng-morph-form": {
+      "tags": []
     }
   }
 }

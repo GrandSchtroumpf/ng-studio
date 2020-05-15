@@ -40,6 +40,7 @@
     "@remixproject/engine": "^0.3.0-alpha.3",
     "@remixproject/plugin": "^0.3.0-alpha.2",
     "core-js": "^2.5.4",
+    "ng-form-factory": "0.0.8",
     "rxjs": "~6.5.4",
     "ts-morph": "^7.0.3",
     "tslib": "^1.10.0",

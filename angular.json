@@ -470,6 +470,50 @@
           }
         }
       }
+    },
+    "ng-morph-form": {
+      "projectType": "library",
+      "root": "libs/ng-morph-form",
+      "sourceRoot": "libs/ng-morph-form/src",
+      "prefix": "ng-morph",
+      "architect": {
+        "build": {
+          "builder": "@nrwl/angular:package",
+          "options": {
+            "tsConfig": "libs/ng-morph-form/tsconfig.lib.json",
+            "project": "libs/ng-morph-form/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "libs/ng-morph-form/tsconfig.lib.prod.json"
+            }
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "libs/ng-morph-form/tsconfig.lib.json",
+              "libs/ng-morph-form/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**", "!libs/ng-morph-form/**"]
+          }
+        },
+        "test": {
+          "builder": "@nrwl/jest:jest",
+          "options": {
+            "jestConfig": "libs/ng-morph-form/jest.config.js",
+            "tsConfig": "libs/ng-morph-form/tsconfig.spec.json",
+            "passWithNoTests": true,
+            "setupFile": "libs/ng-morph-form/src/test-setup.ts"
+          }
+        }
+      },
+      "schematics": {
+        "@nrwl/angular:component": {
+          "style": "scss"
+        }
+      }
     }
   },
   "cli": {
