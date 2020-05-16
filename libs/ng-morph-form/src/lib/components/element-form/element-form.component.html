@@ -1,0 +1,24 @@
+<form [formGroup]="form">
+  <!-- Name -->
+  <mat-form-field>
+    <mat-label>Name</mat-label>
+    <input matInput placeholder="name" formControl="name" />
+  </mat-form-field>
+
+  <!-- Attributes -->
+  <ng-container *ngIf="form.attributes.controls.length else empty">
+    <div [formGroup]="control" *ngFor="let control of form.attributes.controls">
+      <mat-form-field>
+        <mat-label>Name</mat-label>
+        <input matInput placeholder="name" formControl="name" />
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Value</mat-label>
+        <input matInput placeholder="value" formControl="value" />
+      </mat-form-field>
+    </div>
+    <ng-template #empty>
+      <button mat-button (click)="form.attributes.add()">Add an Attribute</button>
+    </ng-template>
+  </ng-container>
+</form>

@@ -1,39 +1,72 @@
-import { FormGroupSchema, FormEntity, createForms } from 'ng-form-factory';
-import { createElement } from 'ng-morph/template';
-import { TextAttribute, Element } from '@angular/compiler/src/render3/r3_ast';
+import { FormGroupSchema, FormEntity, createForms,  GetForm } from 'ng-form-factory';
+import { text, list } from './schema';
+import { AttributeNode, attributeSchema, toAttributeNode } from './attribute.form';
+import { Element } from '@angular/compiler/src/render3/r3_ast';
 
-interface TextAttributSchema extends FormGroupSchema<TextAttribute> {}
-const textAttributeSchema: TextAttributSchema = {
+
+
+// MODEL
+export interface ElementNode {
+  name: string;
+  attributes: AttributeNode[];
+  inputs: AttributeNode[];
+  outputs: AttributeNode[];
+  references: AttributeNode[];
+}
+
+// FACTORY
+export const createElementNode = (params: Partial<ElementNode> = {}): ElementNode => ({
+  name: '',
+  attributes: [],
+  inputs: [],
+  outputs: [],
+  references: [],
+  ...params
+});
+
+
+// Transform
+export const toElementNode = (node: Element): ElementNode => {
+  return createElementNode({
+    name: node.name,
+    attributes: node.attributes.map(a => toAttributeNode(a)),
+    inputs: node.attributes.map(a => toAttributeNode(a)),
+    outputs: node.attributes.map(a => toAttributeNode(a)),
+    references: node.attributes.map(a => toAttributeNode(a)),
+  })
+}
+
+// SCHEMA
+export interface ElementSchema extends FormGroupSchema<ElementNode> {}
+export const elementSchema: ElementSchema = {
   form: 'group',
   load: 'entity',
   controls: {
-    name: { form: 'control', load: 'text' },
-    value: { form: 'control', load: 'text' }
-  }
-};
-
-interface ElementSchema extends FormGroupSchema<Element> {}
-const elementSchema: ElementSchema = {
-  form: 'group',
-  load: 'entity',
-  controls: {
-    name: { form: 'control', load: 'text' },
-    attributes: {
-      form: 'array',
-      load: 'list',
-      factory: textAttributeSchema,
-      controls: []
-    },
-    inputs: {
-      form: 'array',
-      load: 'list',
-      factory: textAttributeSchema as any,
-      controls: []
-    }
+    name: text(),
+    attributes: list(attributeSchema),
+    inputs: list(attributeSchema),
+    outputs: list(attributeSchema),
+    references: list(attributeSchema),
   },
 }
 
-export function elementForm(element: Element = createElement()) {
-  return createForms(elementSchema, element) as FormEntity<ElementSchema, Element>;
+// FORM
+
+type ElementFormKeys = {
+  [key in keyof ElementNode]: GetForm<ElementSchema['controls'][key]>
 }
 
+export type ElementForm = FormEntity<ElementSchema, ElementNode> & ElementFormKeys;
+
+export function elementForm(element: Partial<ElementNode> = {}): ElementForm {
+  const initial = createElementNode(element);
+  const form = createForms(elementSchema, initial);
+  for (const key in initial) {
+    if (!(key in form)) {
+      form[key] = form.get(key as keyof ElementNode);
+    } else {
+      throw new Error(`Cannot set getter "${key}" on entity form because it's already part of the api`)
+    }
+  }
+  return form as any;
+}

@@ -1,7 +1,38 @@
-import { TreeDataProvider, window, workspace, ExtensionContext, TreeItem, TreeItemCollapsibleState, EventEmitter, TextDocument, Uri } from 'vscode';
-import { Element, Node, Template, Text } from '@angular/compiler/src/render3/r3_ast';
+import { commands, TreeDataProvider, window, workspace, ExtensionContext, TreeItem, TreeItemCollapsibleState, EventEmitter, TextDocument, Uri } from 'vscode';
+import { Element, Node, Template } from '@angular/compiler/src/render3/r3_ast';
 import { parseTemplate } from '@angular/compiler';
 import { isElement, isTemplate } from 'ng-morph/template';
+import { Plugin, PluginOptions, Profile } from '@remixproject/engine';
+
+interface TreePluginOptions extends PluginOptions {
+  context: ExtensionContext;
+}
+
+export class TemplatePlugin extends Plugin {
+  private tree?: TemplateTree;
+  protected options: TreePluginOptions;
+
+  constructor(profile: Profile, options: Partial<TreePluginOptions>) {
+    super(profile);
+    this.setOptions(options);
+  }
+  
+  onActivation() {
+    this.tree = new TemplateTree(this.options.context);
+    commands.registerCommand('template.selected', (node) => this.emit('selected', node));
+
+    window.createTreeView('ngTree', {
+      treeDataProvider: this.tree
+    })
+  }
+
+  onDeactivation() {
+    delete this.tree;
+  }
+}
+
+
+
 
 type Tag = Element | Template;
 
@@ -21,7 +52,7 @@ function getCollapseState(node: Tag) {
     : TreeItemCollapsibleState.None;
 }
 
-export class HtmlTree implements TreeDataProvider<ElementItem> {
+export class TemplateTree implements TreeDataProvider<ElementItem> {
   private render = new EventEmitter<ElementItem>()
   onDidChangeTreeData = this.render.event;
   tree?: Node[];
@@ -66,8 +97,8 @@ class ElementItem extends TreeItem {
   public contextValue: string; // use to have specific actions on items
   public tooltip = 'Some tooltip';
   public command = {
-    command: 'ngStudio.select',
-    arguments: [this],
+    command: 'template.selected',
+    arguments: [this.node],
     title: 'Selector node'
   }
 

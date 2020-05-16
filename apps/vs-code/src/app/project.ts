@@ -2,7 +2,6 @@ import { window, workspace, ExtensionContext, TextDocument } from 'vscode';
 import { Plugin, Profile, PluginOptions } from '@remixproject/engine';
 import { join } from 'path';
 import { Project, SourceFile } from 'ts-morph';
-import { getStructure } from 'ng-morph';
 
 export function createProject(root: string) {
   const project = new Project();
@@ -50,6 +49,6 @@ export class ProjectPlugin extends Plugin {
   }
 
   getClasses() {
-    return this.sourceFile?.getClasses().map(c => getStructure(c));
+    return this.sourceFile?.getClasses().map(c => c.getStructure());
   }
 }

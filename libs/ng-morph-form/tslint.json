@@ -1,8 +1,8 @@
 {
   "extends": "../../tslint.json",
   "rules": {
-    "directive-selector": [true, "attribute", "ngMorph", "camelCase"],
-    "component-selector": [true, "element", "ng-morph", "kebab-case"]
+    "directive-selector": [true, "attribute", "astForm", "camelCase"],
+    "component-selector": [true, "element", "ast-form", "kebab-case"]
   },
   "linterOptions": {
     "exclude": ["!**/*"]

@@ -33,8 +33,8 @@
       "command": "ngStudio.start",
       "title": "Start"
     }, {
-      "command": "ngStudio.select",
-      "title": "Select"
+      "command": "template.selected",
+      "title": "Select template ast node"
     }] ,
     "configuration": {
       "title": "Ng Studio"
