@@ -9,7 +9,7 @@ export function isSelfClosing(name: string) {
 
 type TemplateAst = ReturnType<typeof parseTemplate>;
 
-export function printTemplateAst(ast: TemplateAst) {
+export function printTemplateAst(ast: { nodes: Node[] }) {
   return ast.nodes.map(node => printNode(node)).join(' ');
 }
 

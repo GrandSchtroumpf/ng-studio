@@ -1,7 +1,6 @@
-import { commands, ExtensionContext, ViewColumn, workspace, window } from 'vscode';
+import { ExtensionContext, ViewColumn, workspace } from 'vscode';
 import { WebviewPlugin } from './app/webview';
 import { ProjectPlugin } from './app/project';
-import { HtmlTree } from './app/html-tree';
 
 import { Engine, PluginManager } from '@remixproject/engine';
 import { TemplatePlugin } from './app/template.plugin';
@@ -14,7 +13,7 @@ export function activate(context: ExtensionContext) {
     // const builder = new WebviewPlugin({ name: 'builder', url: '' }, { context, column: ViewColumn.One });
     // const project = new ProjectPlugin({ name: 'project' }, { context, root: folder.uri.fsPath })
     const template = new TemplatePlugin({ name: 'template' }, { context });
-    const inspector = new WebviewPlugin({ name: 'inspector', url: 'inspector' }, { context, column: ViewColumn.Two });
+    const inspector = new WebviewPlugin({ name: 'inspector', url: 'inspector', methods: ['updateNode'] }, { context, column: ViewColumn.Two });
 
     const manager = new PluginManager();
     const engine = new Engine(manager);
@@ -23,10 +22,4 @@ export function activate(context: ExtensionContext) {
       manager.activatePlugin([ 'inspector', 'template' ]);
     });
   }
-
-  // 	// Tree
-  // const tree = new HtmlTree(context);
-  // const view = window.createTreeView('ngTree', {
-  //   treeDataProvider: tree
-  // })
 }

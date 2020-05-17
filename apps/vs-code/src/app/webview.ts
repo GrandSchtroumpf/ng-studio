@@ -43,7 +43,7 @@ export class WebviewPlugin extends PluginConnector {
       this.panel.webview.onDidReceiveMessage(msg => this.getMessage(msg))
       this.options.context.subscriptions.push(this.panel)
     } else {
-      throw new Error(`WebviewPlugin "${this.name}" `)
+      throw new Error(`WebviewPlugin "${this.name}" has not context`)
     }
   }
 
