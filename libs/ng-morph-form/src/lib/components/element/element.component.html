@@ -1,0 +1,39 @@
+<form [formGroup]="form">
+  <!-- Name -->
+  <mat-form-field>
+    <mat-label>Name</mat-label>
+    <input matInput placeholder="name" formControlName="name" />
+  </mat-form-field>
+
+  <mat-accordion>
+    <!-- Attributes -->
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>Attributes</mat-panel-title>
+      </mat-expansion-panel-header>
+      <ng-template matExpansionPanelContent>
+        <ast-form-attribute [form]="form.attributes"></ast-form-attribute>
+      </ng-template>
+    </mat-expansion-panel>
+    <!-- Attributes -->
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>Input</mat-panel-title>
+      </mat-expansion-panel-header>
+      <ng-template matExpansionPanelContent>
+        <ast-form-attribute [form]="form.inputs"></ast-form-attribute>
+      </ng-template>
+    </mat-expansion-panel>
+    <!-- References -->
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>References</mat-panel-title>
+      </mat-expansion-panel-header>
+      <ng-template matExpansionPanelContent>
+        <ast-form-attribute [form]="form.references"></ast-form-attribute>
+      </ng-template>
+    </mat-expansion-panel>
+  </mat-accordion>
+</form>
+
+

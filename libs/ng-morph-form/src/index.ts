@@ -3,4 +3,4 @@ export * from './lib/attribute.form';
 export * from './lib/template.form';
 export * from './lib/content.form';
 
-export * from './lib/components/element-form/element-form.module';
+export * from './lib/components/element/element.module';

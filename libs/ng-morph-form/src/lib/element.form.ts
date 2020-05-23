@@ -3,7 +3,8 @@ import { text, list } from './schema';
 import { AttributeNode, attributeSchema, toAttributeNode } from './attribute.form';
 import { Element } from '@angular/compiler/src/render3/r3_ast';
 
-
+// TODO : remove "name" & "attribute"
+// Set the list of inputs / output depending on the component name & directive
 
 // MODEL
 export interface ElementNode {
@@ -30,9 +31,9 @@ export const toElementNode = (node: Element): ElementNode => {
   return createElementNode({
     name: node.name,
     attributes: node.attributes.map(a => toAttributeNode(a)),
-    inputs: node.attributes.map(a => toAttributeNode(a)),
-    outputs: node.attributes.map(a => toAttributeNode(a)),
-    references: node.attributes.map(a => toAttributeNode(a)),
+    inputs: node.inputs.map(a => toAttributeNode(a)),
+    outputs: node.outputs.map(a => toAttributeNode({ name: a.name, value: a.handler })),
+    references: node.references.map(a => toAttributeNode(a)),
   })
 }
 

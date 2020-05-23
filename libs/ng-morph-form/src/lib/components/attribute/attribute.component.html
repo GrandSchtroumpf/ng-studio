@@ -1,0 +1,16 @@
+<ng-container *ngIf="form.controls.length else empty">
+  <div class="attribute" [formGroup]="control" *ngFor="let control of form.controls">
+    <mat-form-field>
+      <mat-label>Name</mat-label>
+      <input matInput placeholder="name" formControlName="name" />
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Value</mat-label>
+      <input matInput placeholder="value" formControlName="value" />
+    </mat-form-field>
+  </div>
+</ng-container>
+
+<ng-template #empty>
+  <button mat-button (click)="form.add()">Add</button>
+</ng-template>

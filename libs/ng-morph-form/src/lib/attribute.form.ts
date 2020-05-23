@@ -1,7 +1,6 @@
 import { FormGroupSchema } from 'ng-form-factory';
 import { text } from './schema';
-import { TextAttribute, BoundAttribute, BoundEvent } from '@angular/compiler/src/render3/r3_ast';
-import { ASTWithSource } from '@angular/compiler/src/expression_parser/ast';
+import { AST } from '@angular/compiler/src/expression_parser/ast';
 
 // MODEL
 export interface AttributeNode {
@@ -19,16 +18,18 @@ export const createAttributeNode = (params: Partial<AttributeNode> = {}): Attrib
 // TRANSFORM
 interface AttributeLike {
   name: string;
-  value: string | ASTWithSource
+  value: string | AST
 }
 export const toAttributeNode = (node: AttributeLike) => createAttributeNode({
   name: node.name,
-  value: typeof node.value === 'string' ? node.value : node.value.source
+  value: typeof node.value === 'string'
+    ? node.value
+    : (node.value['source'] || '')
 });
 
 
 // SCHEMA
-interface AttributeSchema extends FormGroupSchema<AttributeNode> {}
+export interface AttributeSchema extends FormGroupSchema<AttributeNode> {}
 export const attributeSchema: AttributeSchema = {
   form: 'group',
   load: 'entity',

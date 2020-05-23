@@ -1,6 +1,5 @@
 import { ExtensionContext, ViewColumn, workspace } from 'vscode';
-import { WebviewPlugin } from './app/webview';
-import { ProjectPlugin } from './app/project';
+import { WebviewPlugin } from '@remixproject/engine-vscode';
 
 import { Engine, PluginManager } from '@remixproject/engine';
 import { TemplatePlugin } from './app/template.plugin';

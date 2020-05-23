@@ -1,5 +1,5 @@
-import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
-import { AstService } from './ast.service';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, Inject } from '@angular/core';
+import { AstService, CLIENT, Client } from './ast.service';
 import { elementForm, elementSchema } from 'ng-morph-form';
 import { filter } from 'rxjs/operators';
 
@@ -15,7 +15,11 @@ export class AppComponent implements OnInit {
   node$ = this.ast.node$;
 
 
-  constructor(private ast: AstService, private cdr: ChangeDetectorRef) {}
+  constructor(
+    @Inject(CLIENT) private client: Client,
+    private ast: AstService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
     this.ast.node$.pipe(filter(v => !!v)).subscribe(node => {
@@ -25,6 +29,6 @@ export class AppComponent implements OnInit {
   }
 
   save() {
-    this.ast.update(this.form.value);
+    this.client.call('template', 'updateNode', this.form.value);
   }
 }

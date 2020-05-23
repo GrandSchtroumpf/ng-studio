@@ -4,8 +4,8 @@ import { ElementForm, ElementSchema } from '../../element.form';
 
 @Component({
   selector: 'ast-form-element',
-  templateUrl: './element-form.component.html',
-  styleUrls: ['./element-form.component.scss'],
+  templateUrl: './element.component.html',
+  styleUrls: ['./element.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FormElementComponent implements FormOutlet {
