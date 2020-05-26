@@ -1,3 +1,5 @@
+// LOOK HERE : @angular/cli/lib/config/schema.json
+
 export interface NgWorkspace {
   $schema: string;
   version: number;

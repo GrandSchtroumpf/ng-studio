@@ -12,7 +12,7 @@ interface TreePluginOptions extends PluginOptions {
 export class TemplatePlugin extends Plugin {
   private listeners: Disposable[] = [];
   protected options: TreePluginOptions;
-  methods = ['updateNode', 'updateAst'];
+  methods = ['selectNode', 'updateNode', 'updateAst'];
   filePath?: string;
   ast?: Node[];
   tree?: TemplateTree;
@@ -53,6 +53,7 @@ export class TemplatePlugin extends Plugin {
       const code = document.getText();
       this.filePath = document.uri.fsPath;
       this.ast = parseTemplate(code, fileName).nodes;
+      this.emit('ast', this.ast);
       this.tree.setAst(this.ast);
       this.tree.render.fire();
     }

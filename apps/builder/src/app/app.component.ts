@@ -1,4 +1,6 @@
 import { Component } from '@angular/core';
+import { AstService } from './ast.service';
+import { switchMap, filter, tap, startWith } from 'rxjs/operators';
 
 @Component({
   selector: 'ng-studio-root',
@@ -6,5 +8,6 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  title = 'builder';
+
+  constructor(private service: AstService) {}
 }
