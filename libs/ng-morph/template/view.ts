@@ -6,7 +6,7 @@ import { ASTWithSource } from '@angular/compiler';
 
 type HtmlNode = ElementNode | ContentNode | Text;
 
-interface ElementNode {
+export interface ElementNode {
   id: string;
   name: string;
   template?: TemplateNode;
@@ -17,24 +17,24 @@ interface ElementNode {
   references: AttributeNode[];
 }
 
-interface AttributeNode {
+export interface AttributeNode {
   name: string;
   value: string;
 }
 
-interface TemplateNode {
+export interface TemplateNode {
   tagName: string;
   variables: AttributeNode[];
   templateAttrs: AttributeNode[];
 }
 
-interface ContentNode {
+export interface ContentNode {
   id: string;
   selector: string;
   attributes: AttributeNode[];
 }
 
-interface TextNode {
+export interface TextNode {
   id: string;
   value: string;
 }
@@ -43,7 +43,7 @@ export function createAst(nodes: Node[]) {
   return nodes.map((node, i) => fromNode(node, `${i}`));
 }
 
-function fromNode(node: Node, id: string) {
+export function fromNode(node: Node, id: string) {
   if (isElement(node)) {
     return fromElement(node, id);
   }
@@ -65,8 +65,8 @@ function fromNode(node: Node, id: string) {
 // TAG //
 /////////
 
-function fromElement(node: Element, parentId: string) {
-  const id = `${parentId}-${node.name}`;
+export function fromElement(node: Element, parentId: string) {
+  const id = createId(parentId, node.name);
   return {
     id,
     name: node.name,
@@ -74,19 +74,19 @@ function fromElement(node: Element, parentId: string) {
     inputs: node.inputs.map(attr => fromInput(attr)),
     outputs: node.outputs.map(attr => fromOutput(attr)),
     references: node.references.map(attr => fromReference(attr)),
-    children: node.children.map((child, i) => fromNode(child, `${id}_${i}`))
+    children: node.children.map((child, i) => fromNode(child, `${id}_${i}`)),
   }
 }
 
-function fromTemplate(node: Template, parentId: string) {
+export function fromTemplate(node: Template, parentId: string) {
   return node.tagName === 'ng-template'
     ? fromNgTemplate(node, parentId)
     : fromStructuralDirective(node, parentId)
 }
 
 /** Match with Element Node */
-function fromNgTemplate(node: Template, parentId: string): ElementNode {
-  const id = `${parentId}-${node.tagName}`;
+export function fromNgTemplate(node: Template, parentId: string): ElementNode {
+  const id = createId(parentId, node.tagName);
   return {
     id,
     name: node.tagName,
@@ -99,7 +99,7 @@ function fromNgTemplate(node: Template, parentId: string): ElementNode {
 }
 
 /** Add template attribute the the child element */
-function fromStructuralDirective(node: Template, parentId: string): ElementNode {
+export function fromStructuralDirective(node: Template, parentId: string): ElementNode {
   const child = fromNode(node.children[0], parentId);
   const template = {
     tagName: node.tagName,
@@ -115,9 +115,9 @@ function fromStructuralDirective(node: Template, parentId: string): ElementNode 
 }
 
 
-function fromContent(node: Content, parentId: string) {
+export function fromContent(node: Content, parentId: string) {
   return {
-    id: `${parentId}-${node.selector}`,
+    id: createId(parentId, node.selector),
     selector: node.selector,
     attributes: node.attributes.map(attr => fromTextAttribute(attr))
   }
@@ -127,35 +127,35 @@ function fromContent(node: Content, parentId: string) {
 // ATTRIBUTES //
 ////////////////
 
-function fromTextAttribute(node: TextAttribute): AttributeNode {
+export function fromTextAttribute(node: TextAttribute): AttributeNode {
   return {
     name: node.name,
     value: node.value
   }
 }
 
-function fromInput(node: BoundAttribute): AttributeNode {
+export function fromInput(node: BoundAttribute): AttributeNode {
   return {
     name: node.name,
     value: (node.value as ASTWithSource).source
   }
 }
 
-function fromOutput(node: BoundEvent): AttributeNode {
+export function fromOutput(node: BoundEvent): AttributeNode {
   return {
     name: node.name,
     value: (node.handler as ASTWithSource).source
   }
 }
 
-function fromReference(node: Reference): AttributeNode {
+export function fromReference(node: Reference): AttributeNode {
   return {
     name: node.name,
     value: node.value
   }
 }
 
-function fromVariable(node: Variable): AttributeNode {
+export function fromVariable(node: Variable): AttributeNode {
   return {
     name: node.name,
     value: node.value
@@ -167,18 +167,22 @@ function fromVariable(node: Variable): AttributeNode {
 // TEXT //
 //////////
 
-function fromText(node: Text, parentId: string): TextNode {
+export function fromText(node: Text, parentId: string): TextNode {
   return {
-    id: `${parentId}-text`,
+    id: createId(parentId, 'text'),
     value: node.value
   }
 }
 
-function fromBoundText(node: BoundText, parentId: string): TextNode {
+export function fromBoundText(node: BoundText, parentId: string): TextNode {
   return {
-    id: `${parentId}-boundText`,
+    id: createId(parentId, 'boundText'),
     value: (node.value as ASTWithSource).source
   }
 }
 
 // TODO : ICU
+
+function createId(parentId: string, baseId: string) {
+  return parentId ? `${parentId}-${baseId}` : baseId;
+}
