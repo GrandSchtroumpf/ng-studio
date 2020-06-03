@@ -1,5 +1,5 @@
-import { TemplateHost, getTemplateHost } from '../src/morph';
-import { ElementNode, isElementNode, elementNode, TextNode, isTextNode, textNode, createId } from '../src/node';
+import { TemplateHost, getTemplateHost, Element } from '../src/morph';
+import { ElementNode, isElementNode, elementNode, TextNode, isTextNode, textNode, createId, contentNode, isContentNode } from '../src/node';
 
 describe('Create id', () => {
   test('create Id', () => {
@@ -7,23 +7,28 @@ describe('Create id', () => {
     expect(createId('0-1', 0)).toBe('0-1-0');
     expect(createId('0-1', '0')).toBe('0-1-0');
     expect(createId('0-1', '0-1')).toBe('0-1-0-1');
-  })
+  });
 });
 
 describe('Create Node', () => {
-  test('create test', () => {
+  test('create text', () => {
     const child = textNode('Hello world');
     expect(child).toEqual({ id: '', value: 'Hello world' });
     expect(isTextNode(child)).toBeTruthy();
-  })
+  });
+  test('create content', () => {
+    const child = contentNode();
+    expect(child).toEqual({ id: '', selector: '*', attributes: [] });
+    expect(isContentNode(child)).toBeTruthy();
+  });
   test('create element', () => {
     const child = elementNode({ name: 'li', children: [textNode('Hello')] });
     expect(child.children.length).toBe(1);
     expect(isElementNode(child)).toBeTruthy();
-  })
+  });
 })
 
-describe('View node', () => {
+describe('Host', () => {
 
   test('get template host', () => {
     const host = getTemplateHost('<h1>Hello World</h1>');
@@ -92,4 +97,55 @@ describe('View node', () => {
     const node = host.getNode<TextNode>('0-0');
     expect(node).toEqual({ id: '0-0', value: 'Hello World' })
   })
+});
+
+describe('Element', () => { 
+  test('Create', () => {
+    const element = new Element();
+    expect(element).toBeDefined();
+  });
+
+  test('Add attributes', () => {
+    const element = Element.fromName('h1');
+    element.addTextAttribute('id', 'my-id');
+    element.addInput('class', 'myClass');
+    element.addOuput('click', 'onClick()');
+    element.addReference('ref');
+    const node = element.getNode();
+    expect(node).toEqual({
+      id: '0',
+      name: 'h1',
+      attributes: [{ name: 'id', value: 'my-id'}],
+      inputs: [{ name: 'class', value: 'myClass'}],
+      outputs: [{ name: 'click', value: 'onClick()'}],
+      references: [{ name: 'ref', value: '' }],
+      children: [],
+    });
+  });
+
+  test('Remove attributes', () => {
+    const node = {
+      name: 'h1',
+      attributes: [{ name: 'id', value: 'my-id'}],
+      inputs: [{ name: 'class', value: 'myClass'}],
+      outputs: [{ name: 'click', value: 'onClick()'}],
+      references: [{ name: 'ref', value: '' }],
+    };
+    const element = new Element(node);
+    element.removeTextAttribute('id');
+    element.removeInput('class');
+    element.removeOutput('click');
+    element.removeReference('ref');
+    expect(node).toEqual({ id: '0', name: 'h1', attributes: [], inputs: [], outputs: [], references: [], children: [] });
+  });
+
+  test('Push', () => {
+    const element = Element.fromName('ul');
+    const node = element.getNode();
+    element.push(elementNode({ name: 'li' }));
+    expect(node.children.length).toBe(1);
+    element.insert(textNode('Hello'), 0);
+    expect(node.children.length).toBe(2);
+    expect(node.children[0]).toEqual({ id: '0-0', value: 'Hello' });
+  });
 });

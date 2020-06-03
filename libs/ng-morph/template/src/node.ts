@@ -17,7 +17,7 @@ export interface ElementNode {
 
 export interface AttributeNode {
   name: string;
-  value?: string;
+  value: string;
 }
 
 export interface TemplateNode {
@@ -43,7 +43,7 @@ export function isElementNode(node: HtmlNode): node is ElementNode {
 }
 
 export function isContentNode(node: HtmlNode): node is ContentNode {
-  return 'id' in node && 'select' in node;
+  return 'id' in node && 'selector' in node;
 }
 
 export function isTextNode(node: HtmlNode): node is TextNode {
@@ -77,16 +77,16 @@ export function fromNode(node: Node, id: string) {
 // ELEMENT NODE //
 //////////////////
 
-export const elementNode = (node: Partial<ElementNode>) => ({
-  id: '',
-  name: node.name,
-  attributes: [],
-  inputs: [],
-  outputs: [],
-  references: [],
-  children: [],
-  ...node
-});
+export function elementNode(node: Partial<ElementNode>): ElementNode {
+  node.id = node.id || '';
+  node.name = node.name || '';
+  node.attributes = node.attributes || [];
+  node.inputs = node.inputs || [];
+  node.outputs = node.outputs || [];
+  node.references = node.references || [];
+  node.children = node.children || [];
+  return node as ElementNode;
+}
 
 export function fromElement(node: Element, id: string) {
   return {

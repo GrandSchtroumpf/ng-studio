@@ -4,7 +4,6 @@ import {
   isElementNode, ElementNode, elementNode,
   isContentNode, ContentNode, contentNode,
   isTextNode, TextNode,
-  AttributeNode,
   TemplateNode,
 } from './node';
 
@@ -16,11 +15,11 @@ import {
 
 type AttributeType = 'attributes' | 'inputs' | 'outputs' | 'references';
 
-class Element {
+export class Element {
   private node: ElementNode;
   private host: TemplateHost;
   public addTextAttribute = this.addAttribute.bind(this, 'attributes');
-  public removeTextAttribute = this.addAttribute.bind(this, 'attributes');
+  public removeTextAttribute = this.removeAttribute.bind(this, 'attributes');
   
   public addInput = this.addAttribute.bind(this, 'inputs');
   public removeInput = this.removeAttribute.bind(this, 'inputs');
@@ -59,8 +58,8 @@ class Element {
     this.setHost(host);
   }
 
-  private addAttribute(type: AttributeType, attribute: AttributeNode) {
-    this.get(type).push(attribute);
+  private addAttribute(type: AttributeType, name: string, value: string = '') {
+    this.get(type).push({ name, value });
   }
 
   private removeAttribute(type: AttributeType, name: string) {
@@ -77,7 +76,7 @@ class Element {
     return this.host.update(node, this.node.id);
   }
 
-  push(node: HtmlNode) {
+  push<T extends HtmlNode>(node: T) {
     return this.host.push(node, this.node.id);
   }
 
@@ -118,7 +117,7 @@ class Element {
 
 type TemplateAttributeType = 'variables' | 'templateAttrs';
 
-class Template {
+export class Template {
   public addVariable = this.addAttribute.bind(this, 'variables');
   public removeVariable = this.removeAttribute.bind(this, 'variables');
 
@@ -127,8 +126,8 @@ class Template {
 
   constructor(private node: TemplateNode) {}
 
-  private addAttribute(type: TemplateAttributeType, attribute: AttributeNode) {
-    this.get(type).push(attribute);
+  private addAttribute(type: TemplateAttributeType, name: string, value: string = '') {
+    this.get(type).push({ name, value });
   }
 
   private removeAttribute(type: TemplateAttributeType, name: string) {
@@ -145,7 +144,7 @@ class Template {
 /////////////
 // CONTENT //
 /////////////
-class Content {
+export class Content {
   private node: ContentNode;
   constructor(node: Partial<ContentNode> = {}) {
     this.node = contentNode(node);
@@ -167,7 +166,7 @@ class Content {
 //////////
 // TEXT //
 //////////
-class Text {
+export class Text {
   private node: TextNode;
   constructor(node: Partial<ContentNode> = {}) {
     this.node = { id: '', value: '', ...node };
@@ -229,13 +228,14 @@ export class TemplateHost {
 
   visitAll(ast: HtmlNode[]) {
     this.tree.nodes = ast;
-    ast.forEach(node => this.visitNode(node));
+    ast.forEach((node, i) => this.visitNode(node, createId(i)));
   }
 
-  private visitNode(node: HtmlNode) {
+  private visitNode(node: HtmlNode, id: string) {
+    node.id = node.id || id;
     this.map[node.id] = node;
     if (isElementNode(node)) {
-      node.children.forEach(child => this.visitNode(child));
+      node.children.forEach((child, i) => this.visitNode(child, createId(node.id, i)));
     }
   }
 
@@ -300,8 +300,8 @@ export class TemplateHost {
   push(node: HtmlNode, parentId?: string) {
     const children = this.getChildren(parentId);
     if (children) {
-      node.id = createId(parentId, children.length);
-      this.visitNode(node);
+      const id = createId(parentId, children.length);
+      this.visitNode(node, id);
       return children.push(node);
     }
   }
@@ -322,8 +322,8 @@ export class TemplateHost {
         children[i + 1] = children[i];
       }
       // Add the new one
-      node.id = createId(parentId, index);
-      this.visitNode(node);
+      const id = createId(parentId, index);
+      this.visitNode(node, id);
       children[index] = node;
     }
   }
