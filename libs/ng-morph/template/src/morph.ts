@@ -1,58 +1,190 @@
 import { parseTemplate } from '@angular/compiler';
-import { isElementNode, createAst, HtmlNode, createId, getParentAndIndex, elementNode } from './node';
+import {
+  createAst, HtmlNode, createId, getParentAndIndex,
+  isElementNode, ElementNode, elementNode,
+  isContentNode, ContentNode, contentNode,
+  isTextNode, TextNode,
+  AttributeNode,
+  TemplateNode,
+} from './node';
 
 
 /////////////
 // ELEMENT //
 /////////////
 
-export interface ElementNode {
-  id: string;
-  name: string;
-  template?: TemplateNode;
-  attributes: AttributeNode[];
-  inputs: AttributeNode[];
-  outputs: AttributeNode[];
-  children: HtmlNode[];
-  references: AttributeNode[];
-}
 
-export interface AttributeNode {
-  name: string;
-  value: string;
-}
-
-export interface TemplateNode {
-  tagName: string;
-  variables: AttributeNode[];
-  templateAttrs: AttributeNode[];
-}
-
+type AttributeType = 'attributes' | 'inputs' | 'outputs' | 'references';
 
 class Element {
-  public node: ElementNode;
+  private node: ElementNode;
+  private host: TemplateHost;
+  public addTextAttribute = this.addAttribute.bind(this, 'attributes');
+  public removeTextAttribute = this.addAttribute.bind(this, 'attributes');
+  
+  public addInput = this.addAttribute.bind(this, 'inputs');
+  public removeInput = this.removeAttribute.bind(this, 'inputs');
+
+  public addOuput = this.addAttribute.bind(this, 'outputs');
+  public removeOutput = this.removeAttribute.bind(this, 'outputs');
+
+  public addReference = this.addAttribute.bind(this, 'references');
+  public removeReference = this.removeAttribute.bind(this, 'references');
+
+  static fromHost(host: TemplateHost, node?: Partial<ElementNode>) {
+    const element = new Element(node);
+    element.setHost(host);
+    return element;
+  }
+
+  static fromName(name: string) {
+    return new Element({ name });
+  }
+
+  static fromTemplate(template: string) {
+    const host = getTemplateHost(template);
+    const children = host.getChildren();
+    if (children.length > 1) {
+      throw new Error('Element template must have one element root');
+    }
+    const element = new Element(children[0]);
+    element.setHost(host);
+    return element;
+  }
 
   constructor(node: Partial<ElementNode> = {}) {
     this.node = elementNode(node);
+    const host = new TemplateHost();
+    host.visitAll([ this.node ]);
+    this.setHost(host);
   }
 
-  get(key: keyof ElementNode) {
+  private addAttribute(type: AttributeType, attribute: AttributeNode) {
+    this.get(type).push(attribute);
+  }
+
+  private removeAttribute(type: AttributeType, name: string) {
+    const attributes = this.get(type);
+    const index = attributes.findIndex(attr => attr.name === name);
+    return attributes.splice(index, 1);
+  }
+
+  setHost(host: TemplateHost) {
+    this.host = host;
+  }
+
+  update(node: Partial<ElementNode>) {
+    return this.host.update(node, this.node.id);
+  }
+
+  push(node: HtmlNode) {
+    return this.host.push(node, this.node.id);
+  }
+
+  insert(node: HtmlNode, index: number) {
+    return this.host.insert(node, index, this.node.id);
+  }
+
+  pop() {
+    return this.host.pop(this.node.id);
+  }
+
+  removeAt(index: number) {
+    return this.host.removeAt(index, this.node.id);
+  }
+
+  get<K extends keyof ElementNode>(key: K): ElementNode[K] {
     return this.node[key];
   }
 
-  addAttribute() {}
-  removeAttribute() {}
+  getNode() {
+    return this.node;
+  }
 
-  addInput() {}
-  removeInput() {}
+  getChildren() {
+    return this.node.children.map(node => this.host.get(node.id));
+  }
 
-  addChild() {}
+  getTemplate() {
+    if (this.node.template) {
+      return new Template(this.node.template);
+    }
+  }
+
+  setTemplate(node: TemplateNode) {
+    this.node.template = node;
+  }
+}
+
+type TemplateAttributeType = 'variables' | 'templateAttrs';
+
+class Template {
+  public addVariable = this.addAttribute.bind(this, 'variables');
+  public removeVariable = this.removeAttribute.bind(this, 'variables');
+
+  public addTemplateAttr = this.addAttribute.bind(this, 'templateAttrs');
+  public removeTemplateAttr = this.removeAttribute.bind(this, 'templateAttrs');
+
+  constructor(private node: TemplateNode) {}
+
+  private addAttribute(type: TemplateAttributeType, attribute: AttributeNode) {
+    this.get(type).push(attribute);
+  }
+
+  private removeAttribute(type: TemplateAttributeType, name: string) {
+    const attributes = this.get(type);
+    const index = attributes.findIndex(attr => attr.name === name);
+    return attributes.splice(index, 1);
+  }
+
+  get<K extends keyof TemplateNode>(key: K): TemplateNode[K] {
+    return this.node[key];
+  }
+}
+
+/////////////
+// CONTENT //
+/////////////
+class Content {
+  private node: ContentNode;
+  constructor(node: Partial<ContentNode> = {}) {
+    this.node = contentNode(node);
+  }
+
+  get<K extends keyof ContentNode>(key: K): ContentNode[K] {
+    return this.node[key];
+  }
+
+  setSelector(selector: string) {
+    this.node.selector = selector;
+  }
+
+  getNode() {
+    return this.node;
+  }
+}
+
+//////////
+// TEXT //
+//////////
+class Text {
+  private node: TextNode;
+  constructor(node: Partial<ContentNode> = {}) {
+    this.node = { id: '', value: '', ...node };
+  }
+
+  setText(text: string) {
+    this.node.value = text;
+  }
 }
 
 
-///////////////////
-//  TEMPLATE AST //
-///////////////////
+
+
+
+////////////////////
+//  TEMPLATE HOST //
+////////////////////
 interface AstTree {
   nodes: HtmlNode[];
   styles: string[];
@@ -60,17 +192,24 @@ interface AstTree {
   errors?: string[],
 }
 
-export function getTemplateAst(template: string) {
+export function getTemplateHost(template: string) {
   const { nodes, errors } = parseTemplate(template, '');
   if (!errors) {
-    const templateAst = new TemplateAst();
+    const host = new TemplateHost();
     const ast = createAst(nodes);
-    templateAst.visitAll(ast);
-    return templateAst;
+    host.visitAll(ast);
+    return host;
   }
 }
 
-export class TemplateAst {
+export function removePrefixId(node: HtmlNode, prefix: string) {
+  node.id = node.id.replace(prefix, '');
+  if (isElementNode(node)) {
+    node.children.forEach(child => removePrefixId(child, prefix));
+  }
+}
+
+export class TemplateHost {
   private tree: AstTree = { nodes: [], styles: [], ngContentSelectors: [] };
   private map: Record<string, HtmlNode> = {};
 
@@ -116,6 +255,29 @@ export class TemplateAst {
     this.map[node.id] = node;
   }
 
+  /**
+   * Attach an element to another host
+   * @param element The element to attach the the current host
+   * @param parentId The id of the parent to add the element into
+   * @param index The index inside the parent
+   */
+  attach(element: Element, parentId?: string, index?: number) {
+    const children = this.getChildren(parentId);
+    if (children) {
+      const node = element.getNode();
+      this.insert(node, index || children.length, parentId);
+      element.setHost(this);
+    }
+  }
+
+  /** Detach an element from this host and attach it to it's own */
+  detach(id: string) {
+    const [ parentId, index ] = getParentAndIndex(id);
+    const node = this.removeAt(index, parentId);
+    removePrefixId(node, parentId);
+    return new Element(node);
+  }
+
   getChildren(parentId?: string) {
     return parentId
       ? this.getNode<ElementNode>(parentId)?.children
@@ -125,7 +287,13 @@ export class TemplateAst {
   get(id: string) {
     const node = this.map[id];
     if (isElementNode(node)) {
-      return new Element(node);
+      return Element.fromHost(this, node);
+    }
+    if (isContentNode(node)) {
+      return new Content(node);
+    }
+    if (isTextNode(node)) {
+      return new Text(node);
     }
   }
 
@@ -169,7 +337,13 @@ export class TemplateAst {
     }
   }
 
-  remove<T extends HtmlNode = HtmlNode>(index: number, parentId?: string): T {
+  /** Remove a node at a precise id */
+  delete(id: string) {
+    const [ parentId, index ] = getParentAndIndex(id);
+    return this.removeAt(index, parentId);
+  }
+
+  removeAt<T extends HtmlNode = HtmlNode>(index: number, parentId?: string): T {
     const children = this.getChildren(parentId);
     if (children) {
       const size = children.length;  // Need to store it because it grows inside the loop
@@ -198,13 +372,14 @@ export class TemplateAst {
     const [ toParentId, index ] = getParentAndIndex(toId);
     const parent = this.map[toParentId];
     if (node && (parent || toParentId === '')) {
-      this.remove(i, fromParentId);
+      this.removeAt(i, fromParentId);
       this.insert(node, index, toParentId);
     }
   }
 
-  update(id: string, updates: Partial<HtmlNode>) {
+  update(updates: Partial<HtmlNode>, id: string) {
     const node = this.map[id];
+    delete updates['id'];       // Remove id if any
     delete updates['children']; // Remove children if any
     for (const key in updates) {
       node[key] = updates[key];

@@ -17,7 +17,7 @@ export interface ElementNode {
 
 export interface AttributeNode {
   name: string;
-  value: string;
+  value?: string;
 }
 
 export interface TemplateNode {
@@ -135,7 +135,7 @@ export function fromStructuralDirective(node: Template, id: string): ElementNode
   return child;
 }
 
-export const contentNode = (node: Partial<ContentNode> = {}) => ({
+export const contentNode = (node: Partial<ContentNode> = {}): ContentNode => ({
   id: '',
   selector: '*',
   attributes: [],
