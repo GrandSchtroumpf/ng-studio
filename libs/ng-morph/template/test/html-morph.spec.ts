@@ -35,6 +35,12 @@ describe('Host', () => {
     expect(host instanceof TemplateHost).toBeTruthy();
   });
 
+  test('print', () => {
+    const host = getTemplateHost('<h1>Hello World</h1>');
+    const code = host.print();
+    expect(code).toBe('<h1>Hello World</h1>');
+  });
+
   test('push', () => {
     const host = getTemplateHost('<h1></h1>');
     const parent = host.getNode<ElementNode>('0');

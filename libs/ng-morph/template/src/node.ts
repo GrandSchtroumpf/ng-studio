@@ -4,15 +4,22 @@ import { isElement, isText, isBoundText, isTemplate, isContent } from '../helper
 
 export type HtmlNode = ElementNode | ContentNode | TextNode;
 
-export interface ElementNode {
+interface TagNode {
   id: string;
   name: string;
-  template?: TemplateNode;
   attributes: AttributeNode[];
   inputs: AttributeNode[];
   outputs: AttributeNode[];
   children: HtmlNode[];
   references: AttributeNode[];
+}
+
+export interface ElementNode extends TagNode{
+  template?: TemplateNode;
+}
+
+export interface NgTemplateNode extends TagNode {
+  variables: AttributeNode[];
 }
 
 export interface AttributeNode {
@@ -39,7 +46,11 @@ export interface TextNode {
 
 
 export function isElementNode(node: HtmlNode): node is ElementNode {
-  return 'id' in node && 'children' in node && 'name' in node;
+  return 'id' in node && 'children' in node && 'name' in node && name !== 'ng-template';
+}
+
+export function isNgTemplateNode(node: HtmlNode): node is NgTemplateNode {
+  return 'id' in node && 'children' in node && 'name' in node && name === 'ng-template';
 }
 
 export function isContentNode(node: HtmlNode): node is ContentNode {
@@ -106,8 +117,20 @@ export function fromTemplate(node: Template, id: string) {
     : fromStructuralDirective(node, id)
 }
 
+export function ngTemplateNode(node: Partial<NgTemplateNode>): NgTemplateNode {
+  node.id = node.id || '';
+  node.name = 'ng-template';
+  node.attributes = node.attributes || [];
+  node.inputs = node.inputs || [];
+  node.outputs = node.outputs || [];
+  node.references = node.references || [];
+  node.children = node.children || [];
+  node.variables = node.variables || [];
+  return node as NgTemplateNode;
+}
+
 /** Match with Element Node */
-export function fromNgTemplate(node: Template, id: string): ElementNode {
+export function fromNgTemplate(node: Template, id: string): NgTemplateNode {
   return {
     id,
     name: node.tagName,
@@ -115,7 +138,8 @@ export function fromNgTemplate(node: Template, id: string): ElementNode {
     inputs: node.inputs.map(attr => fromInput(attr)),
     outputs: node.outputs.map(attr => fromOutput(attr)),
     references: node.references.map(attr => fromReference(attr)),
-    children: node.children.map((child, i) => fromNode(child, `${id}_${i}`))
+    variables: node.variables.map(attr => fromVariable(attr)),
+    children: node.children.map((child, i) => fromNode(child, `${id}_${i}`)),
   }
 }
 

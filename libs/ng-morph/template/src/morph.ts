@@ -5,19 +5,21 @@ import {
   isContentNode, ContentNode, contentNode,
   isTextNode, TextNode,
   TemplateNode,
+  ngTemplateNode,
 } from './node';
+import { printNode } from './print';
 
 
-/////////////
-// ELEMENT //
-/////////////
+/////////
+// TAG //
+/////////
 
 
 type AttributeType = 'attributes' | 'inputs' | 'outputs' | 'references';
 
-export class Element {
-  private node: ElementNode;
-  private host: TemplateHost;
+class Tag {
+  protected node: ElementNode;
+  protected host: TemplateHost;
   public addTextAttribute = this.addAttribute.bind(this, 'attributes');
   public removeTextAttribute = this.removeAttribute.bind(this, 'attributes');
   
@@ -30,39 +32,12 @@ export class Element {
   public addReference = this.addAttribute.bind(this, 'references');
   public removeReference = this.removeAttribute.bind(this, 'references');
 
-  static fromHost(host: TemplateHost, node?: Partial<ElementNode>) {
-    const element = new Element(node);
-    element.setHost(host);
-    return element;
-  }
 
-  static fromName(name: string) {
-    return new Element({ name });
-  }
-
-  static fromTemplate(template: string) {
-    const host = getTemplateHost(template);
-    const children = host.getChildren();
-    if (children.length > 1) {
-      throw new Error('Element template must have one element root');
-    }
-    const element = new Element(children[0]);
-    element.setHost(host);
-    return element;
-  }
-
-  constructor(node: Partial<ElementNode> = {}) {
-    this.node = elementNode(node);
-    const host = new TemplateHost();
-    host.visitAll([ this.node ]);
-    this.setHost(host);
-  }
-
-  private addAttribute(type: AttributeType, name: string, value: string = '') {
+  protected addAttribute(type: AttributeType, name: string, value: string = '') {
     this.get(type).push({ name, value });
   }
 
-  private removeAttribute(type: AttributeType, name: string) {
+  protected removeAttribute(type: AttributeType, name: string) {
     const attributes = this.get(type);
     const index = attributes.findIndex(attr => attr.name === name);
     return attributes.splice(index, 1);
@@ -75,6 +50,7 @@ export class Element {
   update(node: Partial<ElementNode>) {
     return this.host.update(node, this.node.id);
   }
+  // todo : addElement / addText / addContent
 
   push<T extends HtmlNode>(node: T) {
     return this.host.push(node, this.node.id);
@@ -103,6 +79,41 @@ export class Element {
   getChildren() {
     return this.node.children.map(node => this.host.get(node.id));
   }
+}
+
+/////////////
+// ELEMENT //
+/////////////
+
+export class Element extends Tag {
+  static fromHost(host: TemplateHost, node?: Partial<ElementNode>) {
+    const element = new Element(node);
+    element.setHost(host);
+    return element;
+  }
+
+  static fromName(name: string) {
+    return new Element({ name });
+  }
+
+  static fromTemplate(template: string) {
+    const host = getTemplateHost(template);
+    const children = host.getChildren();
+    if (children.length > 1) {
+      throw new Error('Element template must have one element root');
+    }
+    const element = new Element(children[0]);
+    element.setHost(host);
+    return element;
+  }
+  
+  constructor(node: Partial<ElementNode> = {}) {
+    super();
+    this.node = elementNode(node);
+    const host = new TemplateHost();
+    host.visitAll([ this.node ]);
+    this.setHost(host);
+  }
 
   getTemplate() {
     if (this.node.template) {
@@ -114,6 +125,11 @@ export class Element {
     this.node.template = node;
   }
 }
+
+//////////////
+// TEMPLATE //
+//////////////
+
 
 type TemplateAttributeType = 'variables' | 'templateAttrs';
 
@@ -138,6 +154,36 @@ export class Template {
 
   get<K extends keyof TemplateNode>(key: K): TemplateNode[K] {
     return this.node[key];
+  }
+}
+
+export class NgTemplate extends Tag {
+  public addVariable = super.addAttribute.bind(this, 'variables');
+  public removeVariable = super.removeAttribute.bind(this, 'variables');
+
+  static fromHost(host: TemplateHost, node?: Partial<ElementNode>) {
+    const element = new Element(node);
+    element.setHost(host);
+    return element;
+  }
+
+  static fromTemplate(template: string) {
+    const host = getTemplateHost(template);
+    const children = host.getChildren();
+    if (children.length > 1) {
+      throw new Error('Element template must have one element root');
+    }
+    const element = new Element(children[0]);
+    element.setHost(host);
+    return element;
+  }
+
+  constructor(node: Partial<ElementNode> = {}) {
+    super();
+    this.node = ngTemplateNode(node);
+    const host = new TemplateHost();
+    host.visitAll([ this.node ]);
+    this.setHost(host);
   }
 }
 
@@ -223,7 +269,7 @@ export class TemplateHost {
   }
 
   print() {
-    return '';
+    return this.tree.nodes.map(node => printNode(node)).join('\n');
   }
 
   visitAll(ast: HtmlNode[]) {
