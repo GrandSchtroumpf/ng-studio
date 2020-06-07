@@ -1,6 +1,7 @@
 import { FormGroupSchema, FormEntity, GetForm, createForms } from 'ng-form-factory';
 import { text, list } from './schema';
-import { AttributeNode, attributeSchema } from './attribute.form';
+import { attributeSchema } from './attribute.form';
+import { AttributeNode } from 'ng-morph/template';
 
 // MODEL
 export interface ContentNode {

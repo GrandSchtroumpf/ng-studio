@@ -13,29 +13,40 @@
   ],
   "activationEvents": [
     "onCommand:ngStudio.start",
-    "onView:templateTree"
+    "onView:moduleTree"
   ],
   "contributes": {
     "viewsContainers": {
-			"activitybar": [{
-        "id": "ng-tree",
-        "title": "Angular Tree",
-        "icon": "assets/copy.svg"
-      }]
-		},
-		"views": {
-			"ng-tree": [{
-        "id": "templateTree",
-        "name": "Template Tree"
-      }]
-		},
-    "commands": [{
-      "command": "ngStudio.start",
-      "title": "Start"
-    }, {
-      "command": "template.selected",
-      "title": "Select template ast node"
-    }] ,
+      "activitybar": [
+        {
+          "id": "ng-tree",
+          "title": "Angular Tree",
+          "icon": "assets/copy.svg"
+        }
+      ]
+    },
+    "views": {
+      "ng-tree": [
+        {
+          "id": "moduleTree",
+          "name": "Module Tree"
+        },
+        {
+          "id": "templateTree",
+          "name": "Template Tree"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "ngStudio.start",
+        "title": "Start"
+      },
+      {
+        "command": "template.selected",
+        "title": "Select template ast node"
+      }
+    ],
     "configuration": {
       "title": "Ng Studio"
     }

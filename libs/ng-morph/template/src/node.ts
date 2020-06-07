@@ -4,7 +4,7 @@ import { isElement, isText, isBoundText, isTemplate, isContent } from '../helper
 
 export type HtmlNode = ElementNode | ContentNode | TextNode;
 
-interface TagNode {
+export interface TagNode {
   id: string;
   name: string;
   attributes: AttributeNode[];
@@ -46,11 +46,11 @@ export interface TextNode {
 
 
 export function isElementNode(node: HtmlNode): node is ElementNode {
-  return 'id' in node && 'children' in node && 'name' in node && name !== 'ng-template';
+  return ('id' in node) && ('children' in node) && ('name' in node) && (node.name !== 'ng-template');
 }
 
 export function isNgTemplateNode(node: HtmlNode): node is NgTemplateNode {
-  return 'id' in node && 'children' in node && 'name' in node && name === 'ng-template';
+  return ('id' in node) && ('children' in node) && ('name' in node) && (node.name === 'ng-template');
 }
 
 export function isContentNode(node: HtmlNode): node is ContentNode {
@@ -141,6 +141,13 @@ export function fromNgTemplate(node: Template, id: string): NgTemplateNode {
     variables: node.variables.map(attr => fromVariable(attr)),
     children: node.children.map((child, i) => fromNode(child, `${id}_${i}`)),
   }
+}
+
+export function structuralDirective(node: Partial<TemplateNode>): TemplateNode {
+  node.tagName = node.tagName || '';
+  node.templateAttrs = node.templateAttrs || [];
+  node.variables = node.variables || [];
+  return node as TemplateNode;
 }
 
 /** Add template attribute the the child element */

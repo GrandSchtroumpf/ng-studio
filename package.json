@@ -45,6 +45,7 @@
     "@remixproject/plugin-vscode": "^0.3.0-alpha.1",
     "core-js": "^2.5.4",
     "ng-form-factory": "0.0.8",
+    "ngast": "^0.4.0",
     "rxjs": "~6.5.4",
     "ts-morph": "^7.0.3",
     "tslib": "^1.10.0",

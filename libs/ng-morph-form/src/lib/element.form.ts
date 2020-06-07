@@ -1,41 +1,12 @@
 import { FormGroupSchema, FormEntity, createForms,  GetForm } from 'ng-form-factory';
 import { text, list } from './schema';
-import { AttributeNode, attributeSchema, toAttributeNode } from './attribute.form';
-import { Element } from '@angular/compiler/src/render3/r3_ast';
+import { attributeSchema } from './attribute.form';
+import { ElementNode, elementNode } from 'ng-morph/template';
+import { templateSchema } from './template.form';
 
 // TODO : remove "name" & "attribute"
 // Set the list of inputs / output depending on the component name & directive
 
-// MODEL
-export interface ElementNode {
-  name: string;
-  attributes: AttributeNode[];
-  inputs: AttributeNode[];
-  outputs: AttributeNode[];
-  references: AttributeNode[];
-}
-
-// FACTORY
-export const createElementNode = (params: Partial<ElementNode> = {}): ElementNode => ({
-  name: '',
-  attributes: [],
-  inputs: [],
-  outputs: [],
-  references: [],
-  ...params
-});
-
-
-// Transform
-export const toElementNode = (node: Element): ElementNode => {
-  return createElementNode({
-    name: node.name,
-    attributes: node.attributes.map(a => toAttributeNode(a)),
-    inputs: node.inputs.map(a => toAttributeNode(a)),
-    outputs: node.outputs.map(a => toAttributeNode({ name: a.name, value: a.handler })),
-    references: node.references.map(a => toAttributeNode(a)),
-  })
-}
 
 // SCHEMA
 export interface ElementSchema extends FormGroupSchema<ElementNode> {}
@@ -44,6 +15,7 @@ export const elementSchema: ElementSchema = {
   load: 'entity',
   controls: {
     name: text(),
+    template: templateSchema,
     attributes: list(attributeSchema),
     inputs: list(attributeSchema),
     outputs: list(attributeSchema),
@@ -60,7 +32,7 @@ type ElementFormKeys = {
 export type ElementForm = FormEntity<ElementSchema, ElementNode> & ElementFormKeys;
 
 export function elementForm(element: Partial<ElementNode> = {}): ElementForm {
-  const initial = createElementNode(element);
+  const initial = elementNode(element);
   const form = createForms(elementSchema, initial);
   for (const key in initial) {
     if (!(key in form)) {
