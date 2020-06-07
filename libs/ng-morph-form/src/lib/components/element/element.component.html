@@ -16,13 +16,22 @@
         <ast-form-attribute [form]="form.attributes"></ast-form-attribute>
       </ng-template>
     </mat-expansion-panel>
-    <!-- Attributes -->
+    <!-- Inputs -->
     <mat-expansion-panel>
       <mat-expansion-panel-header>
         <mat-panel-title>Input</mat-panel-title>
       </mat-expansion-panel-header>
       <ng-template matExpansionPanelContent>
-        <ast-form-attribute [form]="form.inputs"></ast-form-attribute>
+        <ast-form-attribute [form]="form.inputs" [options]="context | inputCtx"></ast-form-attribute>
+      </ng-template>
+    </mat-expansion-panel>
+    <!-- Outputs -->
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>Output</mat-panel-title>
+      </mat-expansion-panel-header>
+      <ng-template matExpansionPanelContent>
+        <ast-form-attribute [form]="form.outputs" [options]="context | outputCtx"></ast-form-attribute>
       </ng-template>
     </mat-expansion-panel>
     <!-- References -->

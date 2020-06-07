@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectionStrategy, Input } from '@angular/core';
-import { GetForm, FormList, FormArraySchema } from 'ng-form-factory';
-import { AttributeNode } from '../../attribute.form';
+import { FormList, FormArraySchema } from 'ng-form-factory';
+import { AttributeNode } from 'ng-morph/template';
 
 @Component({
   selector: 'ast-form-attribute',
@@ -11,6 +11,7 @@ import { AttributeNode } from '../../attribute.form';
 export class FormAttributeComponent implements OnInit {
 
   @Input() form: FormList<FormArraySchema<AttributeNode>>;
+  @Input() options: string[];
 
   constructor() { }
 

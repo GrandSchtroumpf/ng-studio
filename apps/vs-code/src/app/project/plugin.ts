@@ -1,8 +1,9 @@
 import { Plugin, PluginOptions } from '@remixproject/engine';
 import { ExtensionContext, Disposable, window, commands } from 'vscode';
 import { ProjectSymbols, ModuleSymbol, DirectiveSymbol, ResourceResolver } from 'ngast';
+import { getContext } from 'ng-morph/typescript';
 import { join } from 'path';
-import { ModuleTree } from './tree';
+import { ModuleTree, isOwnModule } from './tree';
 import { promises, readFileSync } from 'fs';
 
 export const resourceResolver: ResourceResolver = {
@@ -21,6 +22,18 @@ interface ProjectOptions extends PluginOptions {
   context: ExtensionContext;
 }
 
+
+function createLazyCmptRepertory(root: string, modules: ModuleSymbol[]) {
+  const ownModules = modules.filter(isOwnModule).map(module => {
+    const cmpts = module.getDeclaredDirectives().filter(directive => directive.isComponent());
+    return cmpts
+      .map(cmpt => cmpt.getNonResolvedMetadata().type.reference)
+      .map(ref => `${ref.name}: () => import('${ref.filePath.replace('.ts', '')}').then(m => m.${ref.name}),`)
+      .join('\n')
+  }).join('\n');
+  const code = `export const components = {\n${ownModules}\n};\n`;
+  promises.writeFile(`${root}/components.ts`, code);
+}
 
 export class ProjectPlugin extends Plugin {
   private listeners: Disposable[] = [];
@@ -42,6 +55,9 @@ export class ProjectPlugin extends Plugin {
     this.project = new ProjectSymbols(tsconfig, resourceResolver, defaultErrorReporter);
     const modules = this.project.getModules();
 
+    // Create a repertory of all components
+    createLazyCmptRepertory(this.options.root, modules);
+
     this.tree = new ModuleTree(modules);
     this.listeners = [
       window.createTreeView('moduleTree', { treeDataProvider: this.tree }),
@@ -58,13 +74,12 @@ export class ProjectPlugin extends Plugin {
     console.log(symbol.getModuleSummary())
   }
 
-  selectDirective(symbol: DirectiveSymbol) {
+  async selectDirective(symbol: DirectiveSymbol) {
+    const context = getContext(symbol);
+    this.call('inspector', 'setContext', context);
     const metadata = symbol.getResolvedMetadata();
     this.call('template', 'init', metadata);
+    this.call('local', 'setName', symbol.getNonResolvedMetadata().type.reference.name);
   }
 
 }
-
-
-
-

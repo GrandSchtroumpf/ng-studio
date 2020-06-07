@@ -2,7 +2,7 @@ import { TreeDataProvider, EventEmitter, TreeItem, TreeItemCollapsibleState } fr
 import { ModuleSymbol, DirectiveSymbol } from 'ngast';
 
 
-function isOwnModule(module: ModuleSymbol) {
+export function isOwnModule(module: ModuleSymbol) {
   return !module.getModuleSummary().type.reference.filePath.includes('node_modules');
 }
 
@@ -34,7 +34,7 @@ export class ModuleTree implements TreeDataProvider<SymbolNode> {
   getChildren(symbol?: SymbolNode): SymbolNode[] {
     if (symbol) {
       return isModuleSymbol(symbol)
-        ? symbol.getExportedDirectives()
+        ? symbol.getDeclaredDirectives()
         : [];
     } else {
       return this.modules.filter(isOwnModule);
@@ -51,7 +51,7 @@ function getModuleName(symbol: ModuleSymbol) {
 }
 
 function getCollapseState(symbol: ModuleSymbol) {
-  return symbol.getExportedDirectives().length
+  return symbol.getDeclaredDirectives().length
     ? TreeItemCollapsibleState.Collapsed
     : TreeItemCollapsibleState.None;
 }

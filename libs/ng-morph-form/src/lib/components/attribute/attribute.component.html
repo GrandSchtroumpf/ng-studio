@@ -6,7 +6,16 @@
     </mat-form-field>
     <mat-form-field>
       <mat-label>Value</mat-label>
-      <input matInput placeholder="value" formControlName="value" />
+      <ng-container *ngIf="options else input">
+        <mat-select formControlName="value">
+          <mat-option *ngFor="let option of options" [value]="options">
+            {{ option }}
+          </mat-option>
+        </mat-select>
+      </ng-container>
+      <ng-template #input>
+        <input matInput placeholder="value" formControlName="value" />
+      </ng-template>
     </mat-form-field>
   </div>
 </ng-container>

@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@
 import { elementForm, elementSchema } from 'ng-morph-form';
 import { InspectorClient } from './client';
 import { filter } from 'rxjs/operators';
+import { HtmlNode } from 'ng-morph/template';
 
 @Component({
   selector: 'ng-studio-root',
@@ -12,8 +13,9 @@ import { filter } from 'rxjs/operators';
 export class AppComponent implements OnInit {
   form = elementForm();
   schema = elementSchema;
+  node: HtmlNode;
   node$ = this.client.node$;
-
+  context$ = this.client.context$;
 
   constructor(
     private client: InspectorClient,
@@ -22,12 +24,14 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     this.client.node$.pipe(filter(v => !!v)).subscribe(node => {
+      this.node = node;
       this.form = elementForm(node);
       this.cdr.markForCheck();
     });
   }
 
   save() {
-    // this.client.call('template', 'updateNode', this.form.value);
+    const node = { id: this.node.id, ...this.form.value };
+    this.client.call('template', 'updateNode', node);
   }
 }

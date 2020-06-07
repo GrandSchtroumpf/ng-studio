@@ -9,7 +9,12 @@ import { TemplatePlugin } from './app/template/plugin';
 const inspectorProfile = {
   name: 'inspector',
   url: 'inspector',
-  methods: ['select', 'updateNode'],
+  methods: ['select', 'setContext', 'updateNode'],
+};
+
+const localProfile = {
+  name: 'local',
+  methods: ['setName']
 }
 
 // On activation
@@ -20,19 +25,19 @@ export function activate(context: ExtensionContext) {
     const root = folder.uri.fsPath;
     // const builder = new WebviewPlugin({ name: 'builder', url: 'builder' }, { context, column: ViewColumn.Two });
     // ---------
-    const inspector = new WebviewPlugin(inspectorProfile, { context, column: ViewColumn.Three, queueTimeout: 10000 });
+    const inspector = new WebviewPlugin(inspectorProfile, { context, column: ViewColumn.Three });
     const template = new TemplatePlugin({ context });
     const project = new ProjectPlugin({ context, root });
 
-    // const path = `${folder.uri.fsPath}/dist/ng-studio-test`
-    // const local = new WebviewPlugin({ name: 'local', url: path }, { context, column: ViewColumn.Two });
-    // local.setOptions({ devMode: true });  
+    const path = `${root}/dist/ng-studio-test`
+    const local = new WebviewPlugin({ ...localProfile, url: path }, { context, column: ViewColumn.One });
+    local.setOptions({ devMode: true });  
   
     const manager = new PluginManager();
     const engine = new Engine(manager);
     engine.onload(() => {
-      engine.register([ project, template, inspector ]);
-      manager.activatePlugin([ 'project' ]);
+      engine.register([ project, template, inspector, local ]);
+      manager.activatePlugin([ 'project', 'local' ]);
     });
 
   }

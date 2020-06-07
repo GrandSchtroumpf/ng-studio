@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormElementComponent } from './element.component';
+import { FormElementComponent, InputContextPipe, OutputContextPipe } from './element.component';
 import { ReactiveFormsModule } from '@angular/forms';
 
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -10,7 +10,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { FormAttributeModule } from '../attribute/attribute.module';
 
 @NgModule({
-  declarations: [FormElementComponent],
+  declarations: [FormElementComponent, InputContextPipe, OutputContextPipe],
   exports: [FormElementComponent],
   imports: [
     CommonModule,

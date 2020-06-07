@@ -1,4 +1,3 @@
 <h1>Template AST</h1>
-{{ node$ | async | json }}
-<ast-form-element [form]="form" [schema]="schema"></ast-form-element>
+<ast-form-element [form]="form" [schema]="schema" [context]="context$ | async"></ast-form-element>
 <button (click)="save()">Save</button>

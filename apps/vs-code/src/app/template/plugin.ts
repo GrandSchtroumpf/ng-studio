@@ -3,6 +3,7 @@ import { ExtensionContext, Disposable, commands, window, TreeView } from 'vscode
 import { TemplateTree, ElementItem } from './tree';
 import { TemplateHost, getTemplateHost, HtmlNode } from 'ng-morph/template';
 import { CompileTemplateMetadata } from '@angular/compiler';
+import { promises as fs } from 'fs';
 
 interface TreePluginOptions extends PluginOptions {
   context: ExtensionContext;
@@ -18,7 +19,6 @@ export class TemplatePlugin extends Plugin {
   ast?: Node[];
   treeView?: TreeView<ElementItem>;
   tree?: TemplateTree;
-  node?: HtmlNode;
 
   constructor(options: Partial<TreePluginOptions>) {
     super({ name: 'template' });
@@ -47,7 +47,6 @@ export class TemplatePlugin extends Plugin {
 
   /** Select an item & emit the node */
   async selectNode(node: HtmlNode) {
-    this.node = node;
     this.call('inspector', 'select', node);
   }
 
@@ -64,14 +63,15 @@ export class TemplatePlugin extends Plugin {
   //   }
   // }
 
-  // /** Update the selected node */
-  // async updateNode(node: Partial<Element>) {
-  //   if (this.item && this.filePath) {
-  //     this.item.update(node);
-  //     const code = printTemplateAst({ nodes: this.ast });
-  //     await fs.writeFile(this.filePath, code);
-  //     this.tree.setAst(this.ast);
-  //     this.tree.render.fire();
-  //   }
-  // }
+  /** Update the selected node */
+  async updateNode(node: Partial<Element>) {
+    if (this.host) {
+      this.host.update(node, node.id);
+      const code = this.host.print();
+      const path = this.metadata.templateUrl;
+      console.log(path, code);
+      await fs.writeFile(path, code);
+      this.tree.render.fire();
+    }
+  }
 }
