@@ -1,10 +1,10 @@
 import { Plugin, PluginOptions } from '@remixproject/engine';
 import { ExtensionContext, Disposable, window, commands } from 'vscode';
 import { ProjectSymbols, ModuleSymbol, DirectiveSymbol, ResourceResolver } from 'ngast';
-import { getContext } from 'ng-morph/typescript';
+import { getContext, getDirectiveNode } from 'ng-morph/typescript';
 import { join } from 'path';
 import { ModuleTree, isOwnModule } from './tree';
-import { promises, readFileSync } from 'fs';
+import { promises, readFileSync, watch, FSWatcher } from 'fs';
 
 export const resourceResolver: ResourceResolver = {
   get(url: string) {
@@ -38,6 +38,7 @@ function createLazyCmptRepertory(root: string, modules: ModuleSymbol[]) {
 export class ProjectPlugin extends Plugin {
   private listeners: Disposable[] = [];
   protected options: ProjectOptions;
+  private onChange: FSWatcher;
   project: ProjectSymbols;
   tree: ModuleTree;
 
@@ -71,15 +72,26 @@ export class ProjectPlugin extends Plugin {
   }
 
   selectModule(symbol: ModuleSymbol) {
-    console.log(symbol.getModuleSummary())
+    // console.log(symbol.getModuleSummary())
   }
 
   async selectDirective(symbol: DirectiveSymbol) {
-    const context = getContext(symbol);
-    this.call('inspector', 'setContext', context);
-    const metadata = symbol.getResolvedMetadata();
-    this.call('template', 'init', metadata);
-    this.call('local', 'setName', symbol.getNonResolvedMetadata().type.reference.name);
+    if (this.onChange) {
+      this.onChange.close();
+    }
+    const { name, filePath } = symbol.getNonResolvedMetadata().type.reference;
+
+    const node = getDirectiveNode(symbol);
+    const update = () => {
+      this.emit('selectDirective', node);
+      // TODO : remove code below
+      const context = getContext(symbol);
+      this.call('inspector', 'setContext', context);
+      const metadata = symbol.getResolvedMetadata();
+      this.call('template', 'init', metadata);
+    }
+    update();
+    this.onChange = watch(filePath, 'utf-8', () => update());
   }
 
 }

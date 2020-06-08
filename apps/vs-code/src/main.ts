@@ -5,6 +5,8 @@ import { Engine, PluginManager } from '@remixproject/engine';
 
 import { ProjectPlugin } from './app/project/plugin';
 import { TemplatePlugin } from './app/template/plugin';
+import { WindowPlugin } from './app/window.plugin';
+import { WorkspaceSymbol } from 'ng-morph/typescript';
 
 const inspectorProfile = {
   name: 'inspector',
@@ -18,13 +20,15 @@ const localProfile = {
 }
 
 // On activation
-export function activate(context: ExtensionContext) {
+export async function activate(context: ExtensionContext) {
   // Register command "start" 
   const [ folder ] = workspace.workspaceFolders;
   if (folder) {  
     const root = folder.uri.fsPath;
-    // const builder = new WebviewPlugin({ name: 'builder', url: 'builder' }, { context, column: ViewColumn.Two });
-    // ---------
+
+    const symbol = await WorkspaceSymbol.fromPath(`${root}/angular.json`);
+    symbol.getProjects();
+
     const inspector = new WebviewPlugin(inspectorProfile, { context, column: ViewColumn.Three });
     const template = new TemplatePlugin({ context });
     const project = new ProjectPlugin({ context, root });
@@ -35,10 +39,11 @@ export function activate(context: ExtensionContext) {
   
     const manager = new PluginManager();
     const engine = new Engine(manager);
+    const window = new WindowPlugin();
+    
     engine.onload(() => {
-      engine.register([ project, template, inspector, local ]);
-      manager.activatePlugin([ 'project', 'local' ]);
+      engine.register([ project, template, inspector, local, window ]);
+      manager.activatePlugin([ 'project', 'template', 'local', 'inspector', 'window' ]);
     });
-
   }
 }

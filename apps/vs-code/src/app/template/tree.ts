@@ -20,6 +20,7 @@ export class TemplateTree implements TreeDataProvider<TagNode> {
 
   setAst(ast: HtmlNode[]) {
     this.ast = ast;
+    this.render.fire();
   }
 
   getTreeItem(element: TagNode): ElementItem {

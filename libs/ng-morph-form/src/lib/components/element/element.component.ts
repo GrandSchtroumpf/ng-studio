@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, Input, Pipe, PipeTransform } from '@angular/core';
 import { FormOutlet } from 'ng-form-factory';
 import { ElementForm, ElementSchema } from '../../element.form';
-import { ComponentContext } from 'ng-morph/typescript';
+import { DirectiveContext } from 'ng-morph/typescript';
 
 @Component({
   selector: 'ast-form-element',
@@ -12,19 +12,19 @@ import { ComponentContext } from 'ng-morph/typescript';
 export class FormElementComponent implements FormOutlet {
   @Input() form: ElementForm;
   @Input() schema: ElementSchema;
-  @Input() context: ComponentContext;
+  @Input() context: DirectiveContext;
 }
 
 @Pipe({ name: 'inputCtx' })
 export class InputContextPipe implements PipeTransform {
-  transform(context: ComponentContext) {
+  transform(context: DirectiveContext) {
     return context.properties;
   }
 }
 
 @Pipe({ name: 'outputCtx' })
 export class OutputContextPipe implements PipeTransform {
-  transform(context: ComponentContext) {
+  transform(context: DirectiveContext) {
     return context.methods;
   }
 }

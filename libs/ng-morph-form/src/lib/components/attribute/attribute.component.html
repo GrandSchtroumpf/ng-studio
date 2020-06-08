@@ -8,7 +8,7 @@
       <mat-label>Value</mat-label>
       <ng-container *ngIf="options else input">
         <mat-select formControlName="value">
-          <mat-option *ngFor="let option of options" [value]="options">
+          <mat-option *ngFor="let option of options" [value]="option">
             {{ option }}
           </mat-option>
         </mat-select>

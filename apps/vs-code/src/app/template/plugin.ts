@@ -69,7 +69,6 @@ export class TemplatePlugin extends Plugin {
       this.host.update(node, node.id);
       const code = this.host.print();
       const path = this.metadata.templateUrl;
-      console.log(path, code);
       await fs.writeFile(path, code);
       this.tree.render.fire();
     }
