@@ -3,7 +3,8 @@ import { ExtensionContext, Disposable, commands, window, TreeView } from 'vscode
 import { TemplateTree, ElementItem } from './tree';
 import { TemplateHost, getTemplateHost, HtmlNode } from 'ng-morph/template';
 import { CompileTemplateMetadata } from '@angular/compiler';
-import { promises as fs } from 'fs';
+import { promises as fs, watch } from 'fs';
+import { DirectiveNode } from 'ng-morph/typescript';
 
 interface TreePluginOptions extends PluginOptions {
   context: ExtensionContext;
@@ -30,6 +31,9 @@ export class TemplatePlugin extends Plugin {
     const treeView = window.createTreeView('templateTree', { treeDataProvider: this.tree });
     const selected = commands.registerCommand('template.selected', (item) => this.selectNode(item));
     this.listeners = [ treeView, selected ];
+    this.on('project', 'selectDirective', (node: DirectiveNode) => {
+      this.init(node.templateMetadata);
+    });
   }
 
   onDeactivation() {
@@ -38,16 +42,23 @@ export class TemplatePlugin extends Plugin {
 
   init(metadata: CompileTemplateMetadata) {
     this.metadata = metadata;
-    if (metadata.template) {
-      this.host = getTemplateHost(metadata.template);
-      const ast = this.host.getAst();
-      this.tree.setAst(ast.nodes);
+    if (metadata.templateUrl) {
+      const update = async () => {
+        const code = await fs.readFile(metadata.templateUrl, 'utf-8');
+        this.host = getTemplateHost(code); 
+        const ast = this.host.getAst();
+        this.emit('selectAst', ast);
+        this.tree.setAst(ast.nodes);
+      }
+      watch(metadata.templateUrl, 'utf-8', () => update());
+      update();
     }
   }
 
   /** Select an item & emit the node */
   async selectNode(node: HtmlNode) {
-    this.call('inspector', 'select', node);
+    this.emit('selectNode', node);
+    // this.call('inspector', 'select', node);
   }
 
   // /** Update the whole current AST */

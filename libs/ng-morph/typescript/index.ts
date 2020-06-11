@@ -2,4 +2,5 @@
 export * from './component';
 export * from './context';
 
-export * from './workspace.symbol'
+export * from './workspace.symbol';
+export * from './project.symbol';

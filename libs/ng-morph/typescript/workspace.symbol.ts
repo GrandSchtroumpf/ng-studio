@@ -1,23 +1,15 @@
 import { workspaces } from '@angular-devkit/core';
 import { NodeJsSyncHost } from '@angular-devkit/core/node';
-import { ProjectSymbols, ResourceResolver } from 'ngast';
+import { ResourceResolver, ModuleSymbol } from 'ngast';
 import { join } from 'path';
 import { promises as fs, readFileSync } from 'fs';
+import { ProjectSymbol } from './project.symbol';
 
-export const resourceResolver: ResourceResolver = {
-  get(url: string) {
-    return fs.readFile(url, 'utf-8');
-  },
-  getSync(url: string) {
-    return readFileSync(url).toString();
-  }
-};
-
-const defaultErrorReporter = (e: any, path: string) => console.error(e, path);
 
 export class WorkspaceSymbol {
   private config: workspaces.WorkspaceDefinition;
   private root: string;
+  private projects: ProjectSymbol[];
 
   static async fromPath(root: string) {
     const workspace = new WorkspaceSymbol();
@@ -34,14 +26,18 @@ export class WorkspaceSymbol {
   }
 
   async getProjects() {
-    const projects = [];
-    for (const [ name, project ] of this.config.projects) {
-      const tsconfig = project.targets.get('build').options.tsConfig as string;
-      const tsConfigPath = join(this.root, tsconfig);
-      const symbol = new ProjectSymbols(tsConfigPath, resourceResolver, defaultErrorReporter);
-      projects.push(symbol);
+    if (!this.projects) {
+      this.projects = [];
+      for (const [ name, project ] of this.config.projects) {
+        const tsconfig = project.targets.get('build')?.options?.tsConfig as string;
+        if (tsconfig) {
+          const tsConfigPath = join(this.root, tsconfig);
+          const symbol = new ProjectSymbol(tsConfigPath);
+          this.projects.push(symbol);
+        }
+      }
     }
-    return projects;
+    return this.projects;
   }
 
 }

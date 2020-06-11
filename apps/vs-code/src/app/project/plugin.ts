@@ -82,14 +82,7 @@ export class ProjectPlugin extends Plugin {
     const { name, filePath } = symbol.getNonResolvedMetadata().type.reference;
 
     const node = getDirectiveNode(symbol);
-    const update = () => {
-      this.emit('selectDirective', node);
-      // TODO : remove code below
-      const context = getContext(symbol);
-      this.call('inspector', 'setContext', context);
-      const metadata = symbol.getResolvedMetadata();
-      this.call('template', 'init', metadata);
-    }
+    const update = () => this.emit('selectDirective', node);
     update();
     this.onChange = watch(filePath, 'utf-8', () => update());
   }
