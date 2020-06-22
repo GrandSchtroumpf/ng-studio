@@ -2,12 +2,10 @@ import { ExtensionContext, ViewColumn, workspace } from 'vscode';
 import { WebviewPlugin } from './app/webview';
 
 import { Engine, PluginManager } from '@remixproject/engine';
+import { WindowPlugin } from '@remixproject/engine-vscode';
 
 import { ProjectPlugin } from './app/project/plugin';
 import { TemplatePlugin } from './app/template/plugin';
-import { WindowPlugin } from './app/window.plugin';
-import { WorkspaceSymbol } from 'ng-morph/typescript';
-import { WorkspacePlugin } from './app/workspace/plugin';
 
 const inspectorProfile = {
   name: 'inspector',
@@ -27,13 +25,6 @@ export async function activate(context: ExtensionContext) {
   if (folder) {  
     const root = folder.uri.fsPath;
 
-    // const manager = new PluginManager();
-    // const engine = new Engine(manager);
-    // const ws = new WorkspacePlugin({ context, root });
-    // engine.onload(() => {
-    //   engine.register([ ws ]);
-    //   manager.activatePlugin([ 'workspace' ]);
-    // });
     const inspector = new WebviewPlugin(inspectorProfile, { context, column: ViewColumn.Three });
     const template = new TemplatePlugin({ context });
     const project = new ProjectPlugin({ context, root });

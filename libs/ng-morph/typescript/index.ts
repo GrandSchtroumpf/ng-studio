@@ -4,3 +4,6 @@ export * from './context';
 
 export * from './workspace.symbol';
 export * from './project.symbol';
+
+export * from './ngtsc/module.symbol';
+export * from './ngtsc/workspace-symbols';

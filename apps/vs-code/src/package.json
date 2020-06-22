@@ -5,7 +5,7 @@
   "main": "main.js",
   "license": "MIT",
   "engines": {
-    "vscode": "^1.44.0"
+    "vscode": "^1.46.0"
   },
   "keywords": [],
   "categories": [
@@ -45,8 +45,38 @@
       {
         "command": "template.selected",
         "title": "Select template ast node"
+      },
+      {
+        "command": "template.add",
+        "title": "Add a child",
+        "icon": {
+          "dark": "assets/dark/add.svg",
+          "light": "assets/light/add.svg"
+        }
+      },
+      {
+        "command": "template.remove",
+        "title": "Add a child",
+        "icon": {
+          "dark": "assets/dark/delete.svg",
+          "light": "assets/light/delete.svg"
+        }
       }
     ],
+    "menus": {
+      "view/item/context": [
+        {
+          "command": "template.add",
+          "when": "viewItem == element",
+          "group": "inline"
+        },
+        {
+          "command": "template.remove",
+          "when": "viewItem == element",
+          "group": "inline"
+        }
+      ]
+    },
     "configuration": {
       "title": "Ng Studio"
     }

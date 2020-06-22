@@ -41,10 +41,10 @@ export class TemplateTree implements TreeDataProvider<TagNode> {
 export class ElementItem extends TreeItem {
   public iconPath: Uri | string;
   public description: string;
-  public contextValue: string; // use to have specific actions on items
+  public contextValue = 'element'; // use to have specific actions on items
   public tooltip = 'Some tooltip';
   public command = {
-    command: 'template.selected',
+    command: 'template.select',
     arguments: [this.node],
     title: 'Selector node'
   }

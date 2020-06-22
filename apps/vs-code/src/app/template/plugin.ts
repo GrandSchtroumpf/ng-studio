@@ -1,7 +1,7 @@
 import { Plugin, PluginOptions } from '@remixproject/engine';
 import { ExtensionContext, Disposable, commands, window, TreeView } from 'vscode';
 import { TemplateTree, ElementItem } from './tree';
-import { TemplateHost, getTemplateHost, HtmlNode } from 'ng-morph/template';
+import { TemplateHost, getTemplateHost, HtmlNode, elementNode, textNode } from 'ng-morph/template';
 import { CompileTemplateMetadata } from '@angular/compiler';
 import { promises as fs, watch } from 'fs';
 import { DirectiveNode } from 'ng-morph/typescript';
@@ -13,7 +13,8 @@ interface TreePluginOptions extends PluginOptions {
 export class TemplatePlugin extends Plugin {
   private listeners: Disposable[] = [];
   protected options: TreePluginOptions;
-  methods = ['init', 'selectNode', 'updateNode', 'updateAst'];
+  private directiveNode: DirectiveNode;
+  methods = ['init', 'remove', 'add', 'selectNode', 'updateNode', 'updateAst'];
   metadata?: CompileTemplateMetadata;
   host?: TemplateHost;
   filePath?: string;
@@ -29,9 +30,12 @@ export class TemplatePlugin extends Plugin {
   onActivation() {
     this.tree = new TemplateTree();
     const treeView = window.createTreeView('templateTree', { treeDataProvider: this.tree });
-    const selected = commands.registerCommand('template.selected', (item) => this.selectNode(item));
-    this.listeners = [ treeView, selected ];
+    const select = commands.registerCommand('template.select', (item) => this.selectNode(item));
+    const remove = commands.registerCommand('template.remove', (node: HtmlNode) => this.remove(node.id));
+    const addChild = commands.registerCommand('template.add', (parent: HtmlNode) => this.add(parent));
+    this.listeners = [ treeView, select, remove, addChild ];
     this.on('project', 'selectDirective', (node: DirectiveNode) => {
+      this.directiveNode = node;
       this.init(node.templateMetadata);
     });
   }
@@ -55,10 +59,30 @@ export class TemplatePlugin extends Plugin {
     }
   }
 
+  private async save() {
+    const code = this.host.print();
+    const path = this.metadata.templateUrl;
+    await fs.writeFile(path, code);
+    this.tree.render.fire();
+  }
+
+  async add(parent: HtmlNode) {
+    const options = this.directiveNode.context.selectors;
+    const base = ['h1', 'button', 'input', 'section'];
+    const name = await this.call('window', 'select', [ ...base, ...options ]);
+    const node = elementNode({ name });
+    this.host.push(node, parent.id);
+    this.save();
+  }
+
+  async remove(id: string) {
+    this.host.delete(id);
+    this.save();
+  }
+
   /** Select an item & emit the node */
   async selectNode(node: HtmlNode) {
     this.emit('selectNode', node);
-    // this.call('inspector', 'select', node);
   }
 
   // /** Update the whole current AST */

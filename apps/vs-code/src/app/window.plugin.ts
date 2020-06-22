@@ -3,7 +3,7 @@ import { window } from 'vscode';
 
 export const windowProfile: Profile = {
   name: 'window',
-  methods: ['alert', 'prompt'],
+  methods: ['alert', 'warning', 'error', 'prompt', 'select', 'selectFile', 'selectFolder'],
 }
 
 interface IWindowPlugin {

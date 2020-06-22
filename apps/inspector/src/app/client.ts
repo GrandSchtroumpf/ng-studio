@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
-import { PluginClient, connectClient } from '@remixproject/plugin';
+import { PluginClient } from '@remixproject/plugin';
+import { createWebviewClient } from '@remixproject/plugin-vscode'
 import { HtmlNode } from 'ng-morph/template';
-import { WebviewConnector } from './connector';
 import { BehaviorSubject } from 'rxjs';
-// import { DirectiveContext } from 'ngast/lib/directive-symbol';
 import { DirectiveNode, DirectiveContext } from 'ng-morph/typescript';
 
 
@@ -18,7 +17,7 @@ export class InspectorClient extends PluginClient<any, any> {
 
   constructor() {
     super();
-    connectClient(new WebviewConnector(), this);
+    createWebviewClient(this)
     this.onload(() => {
       this.on('project', 'selectDirective', (node: DirectiveNode) => this.context.next(node.context));
       this.on('template', 'selectNode', (node: HtmlNode) => this.node.next(node));
