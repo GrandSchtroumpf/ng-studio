@@ -1,7 +1,7 @@
 import { Plugin, PluginOptions } from '@remixproject/engine';
 import { ExtensionContext, Disposable, commands, window, TreeView } from 'vscode';
 import { TemplateTree, ElementItem } from './tree';
-import { TemplateHost, getTemplateHost, HtmlNode, elementNode, textNode } from 'ng-morph/template';
+import { TemplateHost, getTemplateHost, HtmlNode, elementNode, textNode, TagNode, getParentAndIndex } from 'ng-morph/template';
 import { CompileTemplateMetadata } from '@angular/compiler';
 import { promises as fs, watch } from 'fs';
 import { DirectiveNode } from 'ng-morph/typescript';
@@ -19,7 +19,7 @@ export class TemplatePlugin extends Plugin {
   host?: TemplateHost;
   filePath?: string;
   ast?: Node[];
-  treeView?: TreeView<ElementItem>;
+  treeView?: TreeView<TagNode>;
   tree?: TemplateTree;
 
   constructor(options: Partial<TreePluginOptions>) {
@@ -29,15 +29,21 @@ export class TemplatePlugin extends Plugin {
   
   onActivation() {
     this.tree = new TemplateTree();
-    const treeView = window.createTreeView('templateTree', { treeDataProvider: this.tree });
+    this.treeView = window.createTreeView('templateTree', { treeDataProvider: this.tree });
     const select = commands.registerCommand('template.select', (item) => this.selectNode(item));
     const remove = commands.registerCommand('template.remove', (node: HtmlNode) => this.remove(node.id));
     const addChild = commands.registerCommand('template.add', (parent: HtmlNode) => this.add(parent));
-    this.listeners = [ treeView, select, remove, addChild ];
+    this.listeners = [ this.treeView, select, remove, addChild ];
     this.on('project', 'selectDirective', (node: DirectiveNode) => {
       this.directiveNode = node;
       this.init(node.templateMetadata);
     });
+
+    // Assign selectParet on treeView
+    this.tree.getParent = (node: TagNode) => {
+      const [ parentId ] = getParentAndIndex(node.id);
+      return this.host.getNode(parentId);
+    }
   }
 
   onDeactivation() {
@@ -63,7 +69,7 @@ export class TemplatePlugin extends Plugin {
     const code = this.host.print();
     const path = this.metadata.templateUrl;
     await fs.writeFile(path, code);
-    this.tree.render.fire();
+    this.tree.render.fire(undefined);
   }
 
   async add(parent: HtmlNode) {
@@ -81,7 +87,8 @@ export class TemplatePlugin extends Plugin {
   }
 
   /** Select an item & emit the node */
-  async selectNode(node: HtmlNode) {
+  async selectNode(node: TagNode) {
+    this.treeView.reveal(node);
     this.emit('selectNode', node);
   }
 
@@ -105,7 +112,7 @@ export class TemplatePlugin extends Plugin {
       const code = this.host.print();
       const path = this.metadata.templateUrl;
       await fs.writeFile(path, code);
-      this.tree.render.fire();
+      this.tree.render.fire(undefined);
     }
   }
 }

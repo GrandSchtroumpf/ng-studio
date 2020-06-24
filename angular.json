@@ -24,6 +24,7 @@
               "optimization": true,
               "extractLicenses": true,
               "inspect": false,
+              "externalDependencies": ["vscode"],
               "fileReplacements": [
                 {
                   "replace": "apps/vs-code/src/environments/environment.ts",

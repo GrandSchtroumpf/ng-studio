@@ -14,13 +14,14 @@ function getCollapseState(node: ElementNode) {
 }
 
 export class TemplateTree implements TreeDataProvider<TagNode> {
-  public render = new EventEmitter<TagNode>()
+  public render = new EventEmitter<TagNode>();
   onDidChangeTreeData = this.render.event;
+  elements: Record<string, ElementItem> = {};
   ast?: HtmlNode[];
 
   setAst(ast: HtmlNode[]) {
     this.ast = ast;
-    this.render.fire();
+    this.render.fire(undefined);
   }
 
   getTreeItem(element: TagNode): ElementItem {
@@ -35,6 +36,10 @@ export class TemplateTree implements TreeDataProvider<TagNode> {
         return this.ast.filter(c => !isTextNode(c)) as any[];
       }
     }
+  }
+
+  getParent(node: TagNode): TagNode {
+    throw new Error('This method should be implemented by the template plugin');
   }
 }
 

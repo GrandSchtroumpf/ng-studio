@@ -4,7 +4,8 @@ import { ProjectSymbols, ModuleSymbol, DirectiveSymbol, ResourceResolver } from 
 import { getContext, getDirectiveNode } from 'ng-morph/typescript';
 import { join } from 'path';
 import { ModuleTree, isOwnModule } from './tree';
-import { promises, readFileSync, watch, FSWatcher } from 'fs';
+import { promises, readFileSync, watch, FSWatcher, fstat } from 'fs';
+import { parseStyle } from 'ng-morph/style';
 
 export const resourceResolver: ResourceResolver = {
   get(url: string) {
@@ -80,7 +81,12 @@ export class ProjectPlugin extends Plugin {
       this.onChange.close();
     }
     const { name, filePath } = symbol.getNonResolvedMetadata().type.reference;
+    const [url] = symbol.getResolvedMetadata().styleUrls;
+    const css = await promises.readFile(url, 'utf-8');
+    const style = parseStyle(css);
 
+    console.log('STYLE', style);
+    console.log('CSS', style.print());
     const node = getDirectiveNode(symbol);
     const update = () => this.emit('selectDirective', node);
     update();
