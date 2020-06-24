@@ -6,15 +6,9 @@ const types = [
   'selector', 'identifier', 'class', 'id',
   'block',
   'declaration', 'property', 'value',
-  'space'
 ] as const;
 
 type StyleType = typeof types[number];
-
-interface Declaration {
-  property: string;
-  value: string;
-}
 
 function getChildren(node: Node, keys: StyleType[]): Node[][] {
   const values = new Array(keys.length).fill(undefined).map(v => []);
@@ -31,20 +25,25 @@ function getChildren(node: Node, keys: StyleType[]): Node[][] {
 
 export function parseStyle(style: string) {
   const css = parse(style);
-  return new Stylesheet(css);
+  return new StylesheetHost(css);
 }
 
 export function getSelector(parent: string, selector: Node) {
   return `${parent} ${stringify(selector)}`.trim()
 }
 
-export class Stylesheet {
-  rules: Rule[];
-  record: Record<string, Rule> = {};
+export class StylesheetHost {
+  private rules: Rule[];
+  private record: Record<string, Rule> = {};
+  
   constructor(public node: Node) {
     const [rules] = getChildren(node, ['rule']);
     this.rules = rules.map(r => new Rule(r, ''));
     this.rules.forEach(rule => this.visitRule(rule))
+  }
+
+  getRule(selector: string) {
+    return this.record[selector];
   }
 
   visitRule(rule: Rule) {
@@ -57,7 +56,7 @@ export class Stylesheet {
   }
 }
 
-class Rule {
+export class Rule {
   selector: Selector;
   declarations: Record<string, string> = {};
   rules: Rule[];  // Child rules
@@ -87,7 +86,7 @@ class Rule {
   }
 }
 
-class Selector {
+export class Selector {
   id: string;
   value: string;
   constructor(node: Node, public ctxSelector: string) {

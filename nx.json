@@ -22,20 +22,6 @@
     "vs-code": {
       "tags": []
     },
-    "builder": {
-      "tags": []
-    },
-    "builder-e2e": {
-      "tags": [],
-      "implicitDependencies": ["builder"]
-    },
-    "editor": {
-      "tags": []
-    },
-    "editor-e2e": {
-      "tags": [],
-      "implicitDependencies": ["editor"]
-    },
     "ng-morph": {
       "tags": []
     },
@@ -51,6 +37,13 @@
     },
     "sandbox": {
       "tags": []
+    },
+    "stylesheet": {
+      "tags": ["stylesheet"]
+    },
+    "stylesheet-e2e": {
+      "tags": [],
+      "implicitDependencies": ["stylesheet"]
     }
   }
 }
