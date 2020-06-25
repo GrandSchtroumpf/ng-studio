@@ -1,7 +1,7 @@
 import { Plugin, PluginOptions } from '@remixproject/engine';
 import { ExtensionContext, Disposable, commands, window, TreeView } from 'vscode';
-import { TemplateTree, ElementItem } from './tree';
-import { TemplateHost, getTemplateHost, HtmlNode, elementNode, textNode, TagNode, getParentAndIndex } from 'ng-morph/template';
+import { TemplateTree } from './tree';
+import { TemplateHost, getTemplateHost, HtmlNode, elementNode, TagNode, getParentAndIndex } from 'ng-morph/template';
 import { CompileTemplateMetadata } from '@angular/compiler';
 import { promises as fs, watch } from 'fs';
 import { DirectiveNode } from 'ng-morph/typescript';

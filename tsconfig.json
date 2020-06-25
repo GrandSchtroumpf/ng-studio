@@ -18,7 +18,6 @@
     "baseUrl": ".",
     "paths": {
       "ng-morph": ["libs/ng-morph/src/index.ts"],
-      "ng-morph/*": ["libs/ng-morph/*"],
       "ng-morph-form": ["libs/ng-morph-form/src/index.ts"],
       "sandbox": ["libs/sandbox/src/index.ts"]
     }

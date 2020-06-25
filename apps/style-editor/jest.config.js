@@ -1,7 +1,7 @@
 module.exports = {
-  name: 'stylesheet',
+  name: 'style-editor',
   preset: '../../jest.config.js',
-  coverageDirectory: '../../coverage/apps/stylesheet',
+  coverageDirectory: '../../coverage/apps/style-editor',
   snapshotSerializers: [
     'jest-preset-angular/build/AngularNoNgAttributesSnapshotSerializer.js',
     'jest-preset-angular/build/AngularSnapshotSerializer.js',

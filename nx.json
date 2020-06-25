@@ -38,12 +38,12 @@
     "sandbox": {
       "tags": []
     },
-    "stylesheet": {
-      "tags": ["stylesheet"]
+    "style-editor": {
+      "tags": []
     },
-    "stylesheet-e2e": {
+    "style-editor-e2e": {
       "tags": [],
-      "implicitDependencies": ["stylesheet"]
+      "implicitDependencies": ["style-editor"]
     }
   }
 }

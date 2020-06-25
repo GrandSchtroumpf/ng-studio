@@ -6,11 +6,18 @@ import { WindowPlugin } from '@remixproject/engine-vscode';
 
 import { ProjectPlugin } from './app/project/plugin';
 import { TemplatePlugin } from './app/template/plugin';
+import { StylesheetPlugin } from './app/stylesheet/plugin';
 
 const inspectorProfile = {
   name: 'inspector',
   url: 'inspector',
   methods: ['select', 'setContext', 'updateNode'],
+};
+
+const styleEditorProfile = {
+  name: 'styleEditor',
+  url: 'style-editor',
+  methods: [],
 };
 
 const localProfile = {
@@ -26,7 +33,9 @@ export async function activate(context: ExtensionContext) {
     const root = folder.uri.fsPath;
 
     const inspector = new WebviewPlugin(inspectorProfile, { context, column: ViewColumn.Three });
+    const styleEditor = new WebviewPlugin(styleEditorProfile, { context, column: ViewColumn.Three });
     const template = new TemplatePlugin({ context });
+    const stylesheet = new StylesheetPlugin();
     const project = new ProjectPlugin({ context, root });
 
     const path = `${root}/dist/ng-studio-test`
@@ -38,8 +47,8 @@ export async function activate(context: ExtensionContext) {
     const window = new WindowPlugin();
     
     engine.onload(() => {
-      engine.register([ project, template, inspector, local, window ]);
-      manager.activatePlugin([ 'project', 'template', 'local', 'inspector', 'window' ]);
+      engine.register([ project, template, inspector, stylesheet, styleEditor, local, window ]);
+      manager.activatePlugin([ 'project', 'template', 'stylesheet', 'styleEditor', 'local', 'inspector', 'window' ]);
     });
   }
 }

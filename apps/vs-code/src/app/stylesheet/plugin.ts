@@ -37,6 +37,7 @@ export class StylesheetPlugin extends Plugin {
 
   selectRule(selector: string) {
     const rule = this.host.getRule(selector);
+    console.log(rule);
     this.emit('selected', rule);
   }
 
