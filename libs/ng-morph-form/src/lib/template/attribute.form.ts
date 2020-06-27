@@ -1,5 +1,5 @@
 import { FormGroupSchema } from 'ng-form-factory';
-import { text } from './schema';
+import { text } from '../schema';
 import { AttributeNode } from 'ng-morph/template'
 
 

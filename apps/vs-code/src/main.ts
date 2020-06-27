@@ -32,8 +32,8 @@ export async function activate(context: ExtensionContext) {
   if (folder) {  
     const root = folder.uri.fsPath;
 
-    const inspector = new WebviewPlugin(inspectorProfile, { context, column: ViewColumn.Three });
-    const styleEditor = new WebviewPlugin(styleEditorProfile, { context, column: ViewColumn.Three });
+    const inspector = new WebviewPlugin(inspectorProfile, { context, column: ViewColumn.Two });
+    const styleEditor = new WebviewPlugin(styleEditorProfile, { context, column: ViewColumn.Two });
     const template = new TemplatePlugin({ context });
     const stylesheet = new StylesheetPlugin();
     const project = new ProjectPlugin({ context, root });
@@ -47,7 +47,7 @@ export async function activate(context: ExtensionContext) {
     const window = new WindowPlugin();
     
     engine.onload(() => {
-      engine.register([ project, template, inspector, stylesheet, styleEditor, local, window ]);
+      engine.register([ project, template, stylesheet, styleEditor, local, inspector, window ]);
       manager.activatePlugin([ 'project', 'template', 'stylesheet', 'styleEditor', 'local', 'inspector', 'window' ]);
     });
   }

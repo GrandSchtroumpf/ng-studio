@@ -1,0 +1,8 @@
+<div [formGroup]="form">
+  <input type="number" formControlName="value" (input)="onChange(value)" />
+  <select formControlName="unit">
+    <ng-container *ngFor="let option of options">
+      <option [value]="option">{{ option }}</option>
+    </ng-container>
+  </select>
+</div>

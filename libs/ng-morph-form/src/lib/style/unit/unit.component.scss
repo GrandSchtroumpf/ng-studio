@@ -1,0 +1,15 @@
+:host {
+  display: block;
+  border: var(--vscode-input-border);
+  background: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+}
+
+input, select {
+  background: transparent;
+  border: none;
+}
+
+input {
+  text-align: right;
+}

@@ -330,7 +330,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/apps/style-editor",
+            "outputPath": "dist/apps/vs-code/style-editor",
             "index": "apps/style-editor/src/index.html",
             "main": "apps/style-editor/src/main.ts",
             "polyfills": "apps/style-editor/src/polyfills.ts",
@@ -341,7 +341,8 @@
               "apps/style-editor/src/assets"
             ],
             "styles": ["apps/style-editor/src/styles.scss"],
-            "scripts": []
+            "scripts": [],
+            "outputHashing": "all"
           },
           "configurations": {
             "production": {

@@ -1,5 +1,5 @@
 import { FormGroupSchema, createForms, FormEntity, GetForm } from "ng-form-factory";
-import { text, list } from "./schema";
+import { text, list } from "../schema";
 import { TemplateNode, structuralDirective } from "ng-morph/template";
 import { attributeSchema } from './attribute.form';
 

@@ -43,6 +43,7 @@
     "@remixproject/engine-vscode": "^0.3.0-alpha.3",
     "@remixproject/plugin-vscode": "^0.3.0-alpha.3",
     "core-js": "^2.5.4",
+    "material-form-factory": "0.0.7",
     "ng-form-factory": "0.0.8",
     "ngast": "^0.4.0",
     "rxjs": "~6.5.4",

@@ -1,0 +1,8 @@
+<mat-accordion>
+  <mat-expansion-panel *ngFor="let section of schema.controls | keyvalue">
+    <mat-expansion-panel-header>
+      <mat-panel-title>{{ section.key | titlecase }}</mat-panel-title>
+    </mat-expansion-panel-header>
+    <form-outlet [path]="section.key"></form-outlet>
+  </mat-expansion-panel>
+</mat-accordion>

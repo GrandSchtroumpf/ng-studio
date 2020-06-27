@@ -1,4 +1,4 @@
-import { FormArraySchema, GetSchema, FormControlSchema, } from 'ng-form-factory';
+import { FormArraySchema, GetSchema, FormControlSchema, FormGroupSchema, } from 'ng-form-factory';
 
 export const text = (): FormControlSchema => ({
   form: 'control',
@@ -10,4 +10,10 @@ export const list = <T>(factory: GetSchema<T>): FormArraySchema<T> => ({
   load: 'list',
   controls: [],
   factory,
+});
+
+export const group = <T>(controls: FormGroupSchema<T>['controls']): FormGroupSchema<T> => ({
+  form: 'group',
+  load: 'entity',
+  controls
 });

@@ -1,8 +1,8 @@
 {
   "extends": "../../tslint.json",
   "rules": {
-    "directive-selector": [true, "attribute", "astForm", "camelCase"],
-    "component-selector": [true, "element", "ast-form", "kebab-case"]
+    "directive-selector": [true, "attribute", ["astForm", "form"], "camelCase"],
+    "component-selector": [true, "element", ["ast-form", "form"], "kebab-case"]
   },
   "linterOptions": {
     "exclude": ["!**/*"]
