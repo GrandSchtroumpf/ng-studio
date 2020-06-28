@@ -9,11 +9,11 @@ import { MatExpansionModule } from '@angular/material/expansion';
   selector: '[form] [schema] ast-form-rule',
   templateUrl: './rule.component.html',
   styleUrls: ['./rule.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FormRuleComponent implements FormOutlet {
   @Input() form: RuleForm;
   @Input() schema: RuleSchema;
+  keepOrder: () => 1;
 }
 
 

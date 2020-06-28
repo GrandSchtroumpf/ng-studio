@@ -57,7 +57,8 @@ export function getSelector(parent: string, selector: Node) {
   return `${parent} ${stringify(selector)}`.trim()
 }
 
-export const toCamelCase = s => s.replace(/-./g, x => x.toUpperCase()[1])
+export const toCamelCase = s => s.replace(/-./g, x => x.toUpperCase()[1]);
+export const toKebabCase = s => s.replace(/([a-z0-9]|(?=[A-Z]))([A-Z])/g, '$1-$2').toLowerCase();
 
 export class StylesheetHost {
   private ast: Rule[];
@@ -97,7 +98,12 @@ export class StylesheetHost {
     const { selector, declarations } = rule;
     const node = this.record[selector.id];
     for (const property in declarations) {
-      node.declarations[property] = declarations[property];
+      const value = declarations[property];
+      if (value) {
+        node.declarations[property] = value;
+      } else {
+        delete node.declarations[property];
+      }
     }
   }
 
@@ -134,7 +140,9 @@ function printRule(rule: Rule, depth: number) {
   const tabs = '\t'.repeat(depth);
   const tabsEnd = '\t'.repeat(depth - 1);
   const selector = rule.selector.value;
-  const block = Object.entries(rule.declarations).map(([property, value]) => `${property}: ${value};`).join('\n' + tabs);
+  const block = Object.entries(rule.declarations)
+    .map(([property, value]) => `${toKebabCase(property)}: ${value};`)
+    .join('\n' + tabs);
   const rules = rule.rules.map(r => printRule(r, depth+1)).join('\n\n' + tabs);
   const innerBlock = [ block, rules ].filter(v => !!v).join('\n\n' + tabs);
   return `${selector} {\n${tabs}${innerBlock}\n${tabsEnd}}`;

@@ -10,6 +10,7 @@ export class StylesheetPlugin extends Plugin {
   directiveNode: DirectiveNode;
   stylesheet: StyleSheet;
   host: StylesheetHost;
+  tagNode: TagNode;
 
   constructor() {
     super({ name: 'stylesheet', methods: ['selectRule', 'update'] });
@@ -21,14 +22,8 @@ export class StylesheetPlugin extends Plugin {
       this.init(node.templateMetadata);
     });
     this.on('template', 'selectNode', (node: TagNode) => {
-      const selectorTag = getSelectorTag(node);
-      const selectors = this.host.getSelectors(selectorTag);
-      this.emit('selectSelectors', selectors);
-      if (selectors.length === 1) {
-        this.selectRule(selectors[0]);
-      } else {
-        this.emit('selectRule', undefined);
-      }
+      this.tagNode = node;
+      this.selectSelectors();
     });
   }
 
@@ -42,10 +37,23 @@ export class StylesheetPlugin extends Plugin {
         this.host = parseStyle(code); 
         const ast = this.host.getAst();
         this.emit('selectAst', ast);
-        this.emit('selectRule', undefined);
+        this.selectSelectors();
       }
       watch(url, 'utf-8', () => update());
       update();
+    }
+  }
+
+  selectSelectors() {
+    if (this.tagNode) {
+      const selectorTag = getSelectorTag(this.tagNode);
+      const selectors = this.host.getSelectors(selectorTag);
+      this.emit('selectSelectors', selectors);
+      if (selectors.length === 1) {
+        this.selectRule(selectors[0]);
+      } else {
+        this.emit('selectRule', undefined);
+      }
     }
   }
 

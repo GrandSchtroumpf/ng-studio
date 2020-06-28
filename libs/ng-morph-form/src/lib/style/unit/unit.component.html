@@ -1,7 +1,7 @@
-<div [formGroup]="form">
-  <input type="number" formControlName="value" (input)="onChange(value)" />
+<div [formGroup]="accessorForm">
+  <input type="number" formControlName="value"/>
   <select formControlName="unit">
-    <ng-container *ngFor="let option of options">
+    <ng-container *ngFor="let option of schema.options">
       <option [value]="option">{{ option }}</option>
     </ng-container>
   </select>

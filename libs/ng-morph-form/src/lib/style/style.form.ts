@@ -3,6 +3,9 @@ import { selectSchema } from './select';
 import { propertyListSchema } from './property-list/schema';
 import { ruleSchema } from './rule/schema';
 import { unitSchema } from './unit/schema';
+import { buttonToggleSchema } from './button-toggle/schema';
+import { textAlignIcons, alignItemsIcons } from './statics';
+import { colorSchema } from './color/schema';
 // MODEL
 type RuleSection = Partial<Record<keyof CSSStyleDeclaration, string>>;
 
@@ -10,6 +13,9 @@ interface RuleBuilder {
   layout: RuleSection;
   position: RuleSection;
   size: RuleSection;
+  text: RuleSection;
+  background: RuleSection;
+  flex: RuleSection;
 }
 
 function getKeys(d: Partial<CSSStyleDeclaration>, keys: (keyof CSSStyleDeclaration)[]): RuleSection {
@@ -23,8 +29,11 @@ function getKeys(d: Partial<CSSStyleDeclaration>, keys: (keyof CSSStyleDeclarati
 export function toRuleBuilder(d: Partial<CSSStyleDeclaration>): RuleBuilder {
   return {
     layout: getKeys(d, ['display']),
-    position: getKeys(d, ['position', 'top', 'left', 'right']),
-    size: getKeys(d, ['width', 'height'])
+    position: getKeys(d, ['position', 'top', 'left', 'right', 'bottom']),
+    size: getKeys(d, ['width', 'height', 'margin', 'padding']),
+    text: getKeys(d, ['fontSize', 'textAlign', 'color']),
+    background: getKeys(d, ['backgroundColor']),
+    flex: getKeys(d, ['alignItems'])
   }
 }
 
@@ -33,9 +42,7 @@ export function fromRuleBuilder(builder: RuleBuilder): Partial<CSSStyleDeclarati
   for (const section in builder) {
     const properties = builder[section];
     for (const property in properties) {
-      if (properties[property]) {
-        declarations[property] = properties[property];
-      }
+      declarations[property] = properties[property];
     }
   }
   return declarations;
@@ -46,6 +53,9 @@ function createRuleBuilder(params: Partial<RuleBuilder> = {}): RuleBuilder {
     layout: {},
     position: {},
     size: {},
+    text: {},
+    background: {},
+    flex: {},
     ...params
   };
 }
@@ -66,7 +76,20 @@ export const styleSchema: RuleSchema = ruleSchema<RuleBuilder>({
   size: propertyListSchema({
     width: unitSchema(['px', '%', 'vw']),
     height: unitSchema(['px', '%', 'vh']),
+    margin: unitSchema(['px', '%']),
+    padding: unitSchema(['px', '%']),
   }),
+  text: propertyListSchema({
+    fontSize: unitSchema(['px', 'em', 'rem']),
+    textAlign: buttonToggleSchema({ icons: textAlignIcons }),
+    color: colorSchema()
+  }),
+  background: propertyListSchema({
+    backgroundColor: colorSchema()
+  }),
+  flex: propertyListSchema({
+    alignItems: buttonToggleSchema({ icons: alignItemsIcons })
+  })
 });
 
 // FORM

@@ -1,9 +1,8 @@
-import { Component, OnDestroy, ChangeDetectionStrategy, Input, NgModule, forwardRef } from '@angular/core';
-import { ControlValueAccessor, FormGroup, FormControl, ReactiveFormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { Component, OnDestroy, ChangeDetectionStrategy, Input, NgModule } from '@angular/core';
+import { FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { FormOutlet } from 'ng-form-factory';
-import { change } from '../utils';
-import { Subject } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { UnitSchema } from './schema';
 
 interface Unit {
@@ -12,79 +11,60 @@ interface Unit {
 }
 
 @Component({
-  selector: 'form-unit',
+  selector: 'form-unit-container',
   templateUrl: './unit.component.html',
   styleUrls: ['./unit.component.scss'],
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => UnitComponent),
-    multi: true
-  }],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class UnitComponent implements ControlValueAccessor, OnDestroy {
-  static nextId = 0;
+export class FormUnitComponent implements FormOutlet, OnDestroy {
+  private sub: Subscription[];
+  @Input() schema: UnitSchema;
+  @Input()
+  set form(form: any) {
+    if (form) {
+      this.unsubscribe();
+      this.sub = [
+        // Write value from parent form to local
+        form.value$.subscribe(v => {
+          if (!!v) {
+            const regex = new RegExp(/^(?<value>[0-9\.]*?)(?<unit>[a-z%]*)$/g);
+            const { value = '', unit = this.schema.options[0] } = regex.exec(v).groups;
+            this.accessorForm.setValue({ value, unit });
+          } else {
+            this.accessorForm.reset();
+          }
+        }),
+  
+        // Read value from local form to parent
+        this.accessorForm.valueChanges.subscribe(({ value, unit }: Unit) => {
+          if (value && unit) {
+            form.setValue(value + unit, { emitEvent: false });  // Do not trigger value$ above
+          }
+        })
+      ];
+    }
+  }
 
-  form = new FormGroup({
+  accessorForm = new FormGroup({
     value: new FormControl(),
     unit: new FormControl()
   });
 
-  stateChanges = new Subject<void>();
 
-  @Input() @change() value: Unit;
-  @Input() @change() placeholder: string;
-  @Input() @change('bool') disabled: boolean;
-  @Input() @change('bool') required: boolean;
-
-  // Specific
-  @Input() options: string[];
-
-  onChange = (_: any) => {};
-  onTouched = () => {};
+  private unsubscribe() {
+    if (this.sub) {
+      this.sub.forEach(sub => sub.unsubscribe());
+    }
+  }
   
-
-  constructor() {}
-
-  ngOnDestroy(): void {
-    this.stateChanges.complete();
+  ngOnDestroy() {
+    this.unsubscribe();
   }
-
-  // CONTROL VALUE ACCESSOR
-
-  writeValue(valueStr: string | null): void {
-    const [ value = '', unit = this.options[0] ] = valueStr?.replace(/^[0-9]*/g, (int) => `${int}-`).split('-');
-    this.form.setValue({ value, unit });
-  }
-
-  registerOnChange(fn: any): void {
-    this.onChange = ({value, unit}: Unit) => fn(`${value}${unit}`);
-  }
-
-  registerOnTouched(fn: any): void {
-    this.onTouched = fn;
-  }
-
-  setDisabledState(isDisabled: boolean): void {
-    this.disabled = isDisabled;
-  }
-
-}
-
-
-@Component({
-  selector: 'form-unit-container',
-  template: '<form-unit [options]="schema.options" [formControl]="form"></form-unit>',
-  styles: [':host {display: block;}']
-})
-export class FormUnitComponent implements FormOutlet {
-  @Input() form: FormControl;
-  @Input() schema: UnitSchema;
 }
 
 @NgModule({
-  declarations: [FormUnitComponent, UnitComponent],
-  exports: [UnitComponent],
+  declarations: [FormUnitComponent],
+  exports: [FormUnitComponent],
   imports: [
     CommonModule,
     ReactiveFormsModule,

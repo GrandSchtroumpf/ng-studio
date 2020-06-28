@@ -5,6 +5,8 @@ import { groupSchema } from './group/schema';
 import { propertyListSchema } from './property-list/schema';
 import { ruleSchema } from './rule/schema';
 import { unitSchema, UnitSchema } from './unit/schema';
+import { buttonToggleSchema } from './button-toggle/schema';
+import { colorSchema } from './color/schema';
 
 interface StyleFormFactory {
   select: string;
@@ -13,6 +15,8 @@ interface StyleFormFactory {
   propertyList: object;
   rule: object;
   unit: string;
+  buttonToggle: string | string[];
+  color: string;
 }
 
 export const styleFormFactory: Factory<StyleFormFactory> = {
@@ -39,5 +43,13 @@ export const styleFormFactory: Factory<StyleFormFactory> = {
   unit: {
     component: () => import('./unit').then(c => c.FormUnitComponent),
     schema: (schema: UnitSchema) => unitSchema(schema.options)
-  }
+  },
+  buttonToggle: {
+    component: () => import('./button-toggle').then(c => c.ButtonToggleFormComponent),
+    schema: buttonToggleSchema
+  },
+  color: {
+    component: () => import('./color').then(c => c.FormColorComponent),
+    schema: colorSchema
+  },
 } as const
