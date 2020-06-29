@@ -22,8 +22,8 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     this.client.rule$.subscribe(rule => {
+      this.rule = rule;
       if (rule) {
-        this.rule = rule;
         const builder = toRuleBuilder(rule.declarations);
         this.form = ruleForm(builder);
         this.cdr.markForCheck();
