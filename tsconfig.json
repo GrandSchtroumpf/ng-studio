@@ -1,26 +1,53 @@
+/*
+  This is a "Solution Style" tsconfig.json file, and is used by editors and TypeScript’s language server to improve development experience.
+  It is not intended to be used to perform a compilation.
+
+  To learn more about this file see: https://angular.io/config/solution-tsconfig.
+*/
 {
-  "compileOnSave": false,
-  "compilerOptions": {
-    "rootDir": ".",
-    "sourceMap": true,
-    "declaration": false,
-    "moduleResolution": "node",
-    "strictBindCallApply": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "importHelpers": true,
-    "target": "es2015",
-    "module": "esnext",
-    "typeRoots": ["node_modules/@types"],
-    "lib": ["es2017", "dom", "es2019"],
-    "skipLibCheck": true,
-    "skipDefaultLibCheck": true,
-    "baseUrl": ".",
-    "paths": {
-      "ng-morph/*": ["libs/ng-morph/*"],
-      "ng-morph-form": ["libs/ng-morph-form/src/index.ts"],
-      "sandbox": ["libs/sandbox/src/index.ts"]
+  "files": [],
+  "references": [
+    {
+      "path": "./apps/vs-code/tsconfig.app.json"
+    },
+    {
+      "path": "./apps/vs-code/tsconfig.spec.json"
+    },
+    {
+      "path": "./libs/ng-morph/tsconfig.lib.json"
+    },
+    {
+      "path": "./libs/ng-morph/tsconfig.spec.json"
+    },
+    {
+      "path": "./apps/inspector/tsconfig.app.json"
+    },
+    {
+      "path": "./apps/inspector/tsconfig.spec.json"
+    },
+    {
+      "path": "./apps/inspector-e2e/tsconfig.e2e.json"
+    },
+    {
+      "path": "./libs/ng-morph-form/tsconfig.lib.json"
+    },
+    {
+      "path": "./libs/ng-morph-form/tsconfig.spec.json"
+    },
+    {
+      "path": "./libs/sandbox/tsconfig.lib.json"
+    },
+    {
+      "path": "./libs/sandbox/tsconfig.spec.json"
+    },
+    {
+      "path": "./apps/style-editor/tsconfig.app.json"
+    },
+    {
+      "path": "./apps/style-editor/tsconfig.spec.json"
+    },
+    {
+      "path": "./apps/style-editor-e2e/tsconfig.e2e.json"
     }
-  },
-  "exclude": ["node_modules", "tmp"]
+  ]
 }
