@@ -1,0 +1,34 @@
+@import './variables';
+
+@mixin expansion-theme($theme) {
+  $background: map-get($theme, background);
+
+  .mat-accordion {
+    .mat-expansion-panel {
+      border-radius: 0;
+      // box-shadow: none;
+      .mat-expansion-panel-header {
+        height: $icon-container !important;
+        &.mat-expanded {
+          height: $icon-container !important; // Need to update to angular 10
+        }
+        .mat-expansion-panel-header-title {
+          align-items: center;
+          text-transform: uppercase;
+        }
+      }
+    
+      .mat-expansion-panel-content {
+        .mat-expansion-panel-body {
+          padding-left: 0;
+          padding-right: 0;
+        }
+  
+        .mat-list-base {
+          padding-top: 0;
+        }
+      }
+    }
+  }
+  
+}

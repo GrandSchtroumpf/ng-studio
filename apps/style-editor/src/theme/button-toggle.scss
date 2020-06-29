@@ -1,0 +1,18 @@
+@import './variables';
+
+@mixin button-toggle-theme($theme) {
+  $primary: map-get($theme, primary);
+  .mat-button-toggle-group {
+    border-radius: 0;
+
+    .mat-button-toggle-checked {
+      background-color: mat-color($primary);
+    }
+
+    .mat-button-toggle-label-content {
+      padding: 0 8px;
+      line-height: $icon-container;
+    }
+  }
+
+}

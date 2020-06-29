@@ -5,9 +5,18 @@
   color: var(--vscode-input-foreground);
 }
 
+div {
+  display: flex;
+}
+
 input, select {
   background: transparent;
   border: none;
+}
+
+option {
+  background-color: var(--vscode-dropdown-background);
+  color: var(--vscode-dropdown-foreground);
 }
 
 input {

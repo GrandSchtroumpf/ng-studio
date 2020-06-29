@@ -9,42 +9,23 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatListModule } from '@angular/material/list';
 
 @Component({
   selector: 'form-property-list',
   template: `
-    <ul>
+    <mat-list>
       <ng-container *ngFor="let property of schema.controls | keyvalue: keepOrder">
-        <li class="property">
-          <div>
-            <button mat-icon-button (click)="clear(property.key)">
-              <mat-icon>not_interested</mat-icon>
-            </button>
-            <label>{{ property.key }}</label>
-          </div>
-          <div>
-            <form-outlet [form]="form.get(property.key)" [schema]="property.value"></form-outlet>
-          </div>
-        </li>
+        <mat-list-item class="property">
+          <button matListIcon mat-icon-button (click)="clear(property.key)">
+            <mat-icon>not_interested</mat-icon>
+          </button>
+          <label matLine>{{ property.key }}</label>
+          <form-outlet [form]="form.get(property.key)" [schema]="property.value"></form-outlet>
+        </mat-list-item>
       </ng-container>
-    </ul>
+    </mat-list>
   `,
-  styles: [
-    `
-      ul {
-        display: block;
-        width: 100%;
-        list-style: none;
-        padding: 0;
-      }
-      .property {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-      }
-    `,
-  ]
 })
 export class FormPropertyListComponent implements FormOutlet {
   @Input() form: FormEntity<any>;
@@ -65,6 +46,7 @@ export class FormPropertyListComponent implements FormOutlet {
     FormFactoryModule,
     MatIconModule,
     MatButtonModule,
+    MatListModule,
   ],
 })
 export class FormPropertyListModule {}

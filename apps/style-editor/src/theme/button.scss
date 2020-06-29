@@ -1,0 +1,21 @@
+@import './variables';
+
+@mixin button-theme($theme) {
+  .mat-button {
+    padding: 4px;
+    border-radius: 0;
+  }
+
+  .mat-flat-button {
+    border-radius: 0;
+  }
+
+  button.mat-icon-button, a.mat-icon-button {
+    width: $icon-container;
+    height: $icon-container;
+    line-height: $icon-container;
+    .mat-icon {
+      line-height: $icon-size;
+    }
+  }
+}

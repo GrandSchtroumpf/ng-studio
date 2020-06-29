@@ -1,17 +1,22 @@
-<header>
-  <mat-chip-list *ngIf="selectors$ | async as selectors else noSelector">
-    <ng-container *ngIf="selectors.length else noSelector">
-      <ng-container *ngFor="let selector of selectors">
-        <mat-chip (click)="select(selector)" >{{ selector }}</mat-chip>
-      </ng-container>
+<mat-toolbar *ngIf="selectors$ | async">
+  <h3 class="mat-subheading-2">Selectors</h3>
+  <button mat-icon-button color="primary" (click)="save()">
+    <mat-icon>save</mat-icon>
+  </button>
+</mat-toolbar>
+
+<mat-chip-list *ngIf="selectors$ | async as selectors else noSelector">
+  <ng-container *ngIf="selectors.length else noSelector">
+    <ng-container *ngFor="let selector of selectors">
+      <mat-chip color="primary" [selected]="rule.selector.id === selector" (click)="select(selector)" >{{ selector }}</mat-chip>
     </ng-container>
-  </mat-chip-list>
-  <ng-template #noSelector>
-    <span>There is no selector for this element</span>
-  </ng-template>
-  <button (click)="save()">Save</button>
-</header>
+  </ng-container>
+</mat-chip-list>
 
 <main *ngIf="rule">
   <form-outlet [form]="form" [schema]="schema"></form-outlet>
 </main>
+
+<ng-template #noSelector>
+  <span>There is no selector for this element</span>
+</ng-template>

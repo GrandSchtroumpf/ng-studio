@@ -1,32 +1,172 @@
-/* You can add global styles to this file, and also import other style files */
+@import './styles.vscode';
 @import '~@angular/material/theming';
-// Plus imports for other components in your app.
+@import './theme/button.scss';
+@import './theme/button-toggle.scss';
+@import './theme/expansion.scss';
+@import './theme/list.scss';
+@import './theme/icon.scss';
+@import './theme/toolbar.scss';
+@import './theme/chips.scss';
 
-// Be sure that you only ever include this mixin once!
-@include mat-core();
+// mat-typography-level: font-size / line-height / font-weight / font-family / letter-spacing
 
-$inspector-primary: mat-palette($mat-indigo);
-$inspector-accent: mat-palette($mat-pink, A200, A100, A400);
-$inspector-warn: mat-palette($mat-red);
-
-// Create the theme object (a Sass map containing all of the palettes).
-$inspector-theme: mat-dark-theme(
-  $inspector-primary,
-  $inspector-accent,
-  $inspector-warn
+$typography: mat-typography-config(
+  $font-family: 'Segoe WPC,Segoe UI,sans-serif',
+  $display-4: mat-typography-level(96px, 113px, 500),
+  $display-3: mat-typography-level(80px, 100px, 700),
+  $display-2: mat-typography-level(60px, 78px, 800),
+  $display-1: mat-typography-level(48px, 66px, 700),
+  $headline: mat-typography-level(36px, 52px, 800),
+  $title: mat-typography-level(24px, 36px, 500),
+  $subheading-2: mat-typography-level(11px, 22px),
+  $subheading-1: mat-typography-level(11px, 35px, 400),
+  $body-2: mat-typography-level(13px, 1.4em),
+  $body-1: mat-typography-level(13px, 1.4em),
+  $caption: mat-typography-level(12px, 17px),
+  $button: mat-typography-level(13px, 1.4em, 600),
+  $input: mat-typography-level(inherit, 1)
 );
 
-// Include theme styles for core and each component used in your app.
-// Alternatively, you can import and @include the theme mixins for each component
-// that you are using.
-@include angular-material-theme($inspector-theme);
+// Be sure that you only ever include this mixin once!
+@include mat-core($typography);
+
+
+///////////////
+// ALL COLOR //
+///////////////
+$mat-background: (
+  background:               var(--vscode-sideBar-background),
+  status-bar:               var(--vscode-activityBar-background),
+  app-bar:                  var(--vscode-activityBar-background),
+  hover:                    rgba(var(--vscode-activityBar-background), 0.1),
+  card:                     var(--vscode-activityBar-background),
+  dialog:                   var(--vscode-activityBar-background),
+  tooltip:                  var(--vscode-notifications-background),
+  disabled-button:          rgba(var(--vscode-sideBar-foreground), 0.12),
+  raised-button:            rgba(var(--vscode-sideBar-background), 0.5),
+  focused-button:           rgba(var(--vscode-sideBar-foreground), 0.5),
+  selected-button:          rgba(var(--vscode-sideBar-background), 0.5),
+  selected-disabled-button: rgba(var(--vscode-sideBar-background), 0.5),
+  disabled-button-toggle:   rgba(var(--vscode-sideBar-background), 0.5),
+  unselected-chip:          rgba(var(--vscode-sideBar-background), 0.5),
+  disabled-list-option:     rgba(var(--vscode-sideBar-background), 0.5),
+);
+
+$mat-foreground: (
+  base:              var(--vscode-sideBar-foreground),
+  divider:           var(--vscode-sideBar-border),
+  dividers:          var(--vscode-sideBar-border),
+  disabled:          rgba(var(--vscode-sideBar-foreground), 0.5),
+  disabled-button:   rgba(var(--vscode-sideBar-foreground), 0.3),
+  disabled-text:     rgba(var(--vscode-sideBar-foreground), 0.5),
+  elevation:         black,
+  hint-text:         var(--vscode-inputValidation-infoForeground),
+  secondary-text:    var(--vscode-inputValidation-warningForeground),
+  accent-text:       var(--vscode-inputValidation-warningForeground),
+  icon:              var(--vscode-activityBar-foreground),
+  icons:             var(--vscode-activityBar-foreground),
+  text:              var(--vscode-sideBar-foreground),
+  slider-min:        var(--vscode-sideBar-foreground),
+  slider-off:        rgba(var(--vscode-sideBar-foreground), 0.3),
+  slider-off-active: rgba(var(--vscode-sideBar-foreground), 0.3),
+);
+
+/////////////////
+// THEME COLOR //
+/////////////////
+
+$primary-background: var(--vscode-button-background);
+$primary-foreground: var(--vscode-button-foreground);
+$accent-background: var(--vscode-inputValidation-warningBackground);
+$accent-foreground: var(--vscode-inputValidation-warningForeground);
+$warn-background: var(--vscode-inputValidation-errorBackground);
+$warn-foreground: var(--vscode-inputValidation-errorForeground);
+
+$mat-primary: (
+  main: $primary-background,
+  lighter: $primary-background,
+  darker: $primary-background,
+  contrast: (
+    main: $primary-foreground,
+    lighter: $primary-foreground,
+    darker: $primary-foreground,
+  )
+);
+$theme-primary: mat-palette($mat-primary, main, lighter, darker);
+
+$mat-accent: (
+  main: $accent-background,
+  lighter: $accent-background,
+  darker: $accent-background,
+  contrast: (
+    main: $accent-foreground,
+    lighter: $accent-foreground,
+    darker: $accent-foreground,
+  )
+);
+$theme-accent: mat-palette($mat-accent, main, lighter, darker);
+
+$mat-warn: (
+  main: $warn-background,
+  lighter: $warn-background,
+  darker: $warn-background,
+  contrast: (
+    main: $warn-foreground,
+    lighter: $warn-foreground,
+    darker: $warn-foreground,
+  )
+);
+$theme-warn: mat-palette($mat-warn, main, lighter, darker);
+
+
+// Create the theme object (a Sass map containing all of the palettes).
+body.vscode-light {
+  $theme: (
+    primary: $theme-primary,
+    accent: $theme-accent,
+    warn: $theme-warn,
+    is-dark: false,
+    foreground: $mat-foreground,
+    background: $mat-background,
+  );
+  @include angular-material-theme($theme);
+  @include button-toggle-theme($theme);
+  @include button-theme($theme);
+  @include expansion-theme($theme);
+  @include list-theme($theme);
+  @include icon-theme($theme);
+  @include toolbar-theme($theme);
+  @include chips-theme($theme);
+}
+
+body.vscode-dark {
+  $theme: (
+    primary: $theme-primary,
+    accent: $theme-accent,
+    warn: $theme-warn,
+    is-dark: true,
+    foreground: $mat-foreground,
+    background: $mat-background,
+  );
+  @include angular-material-theme($theme);
+  @include button-toggle-theme($theme);
+  @include button-theme($theme);
+  @include expansion-theme($theme);
+  @include list-theme($theme);
+  @include icon-theme($theme);
+  @include toolbar-theme($theme);
+  @include chips-theme($theme);
+}
+
+
+
 
 /* You can add global styles to this file, and also import other style files */
 
 html,
 body {
   height: 100%;
-}
-body {
+  width: 100%;
   margin: 0;
+  padding: 0;
 }

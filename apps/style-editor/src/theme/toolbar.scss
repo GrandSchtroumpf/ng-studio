@@ -1,0 +1,7 @@
+@import './variables';
+
+@mixin toolbar-theme($theme) {
+  .mat-toolbar {
+    height: $icon-container;
+  }
+}

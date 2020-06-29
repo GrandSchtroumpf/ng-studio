@@ -1,0 +1,5 @@
+@mixin chips-theme($theme) {
+  .mat-standard-chip {
+    padding: 0;
+  }
+}
