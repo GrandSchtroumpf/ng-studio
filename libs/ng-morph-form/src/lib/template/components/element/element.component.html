@@ -1,48 +1,27 @@
 <form [formGroup]="form">
-  <!-- Name -->
-  <mat-form-field>
-    <mat-label>Name</mat-label>
-    <input matInput placeholder="name" formControlName="name" />
+
+  <mat-form-field *ngIf="schema.controls.text">
+    <mat-label>Text</mat-label>
+    <textarea matInput [formControl]="form.text.get('value')" placeholder="Text Content"></textarea>
   </mat-form-field>
 
   <mat-accordion>
-    <!-- TODO: Template -->
     <!-- Attributes -->
     <mat-expansion-panel>
       <mat-expansion-panel-header>
         <mat-panel-title>Attributes</mat-panel-title>
       </mat-expansion-panel-header>
-      <ng-template matExpansionPanelContent>
-        <ast-form-attribute [form]="form.attributes"></ast-form-attribute>
-      </ng-template>
+      <ast-form-attribute [form]="form.attributes"></ast-form-attribute>
     </mat-expansion-panel>
-    <!-- Inputs -->
-    <mat-expansion-panel>
-      <mat-expansion-panel-header>
-        <mat-panel-title>Input</mat-panel-title>
-      </mat-expansion-panel-header>
-      <ng-template matExpansionPanelContent>
-        <ast-form-attribute [form]="form.inputs" [options]="context | inputCtx"></ast-form-attribute>
-      </ng-template>
-    </mat-expansion-panel>
+
     <!-- Outputs -->
     <mat-expansion-panel>
       <mat-expansion-panel-header>
         <mat-panel-title>Output</mat-panel-title>
       </mat-expansion-panel-header>
-      <ng-template matExpansionPanelContent>
-        <ast-form-attribute [form]="form.outputs" [options]="context | outputCtx"></ast-form-attribute>
-      </ng-template>
+      <ast-form-attribute [form]="form.outputs" [options]="context | outputCtx"></ast-form-attribute>
     </mat-expansion-panel>
-    <!-- References -->
-    <mat-expansion-panel>
-      <mat-expansion-panel-header>
-        <mat-panel-title>References</mat-panel-title>
-      </mat-expansion-panel-header>
-      <ng-template matExpansionPanelContent>
-        <ast-form-attribute [form]="form.references"></ast-form-attribute>
-      </ng-template>
-    </mat-expansion-panel>
+
   </mat-accordion>
 </form>
 

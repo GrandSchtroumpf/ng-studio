@@ -7,6 +7,7 @@
 @import './theme/icon.scss';
 @import './theme/toolbar.scss';
 @import './theme/chips.scss';
+@import './theme/tabs.scss';
 
 // mat-typography-level: font-size / line-height / font-weight / font-family / letter-spacing
 
@@ -18,7 +19,7 @@ $typography: mat-typography-config(
   $display-1: mat-typography-level(48px, 66px, 700),
   $headline: mat-typography-level(36px, 52px, 800),
   $title: mat-typography-level(24px, 36px, 500),
-  $subheading-2: mat-typography-level(11px, 22px),
+  $subheading-2: mat-typography-level(11px, 22px, bold),
   $subheading-1: mat-typography-level(11px, 35px, 400),
   $body-2: mat-typography-level(13px, 1.4em),
   $body-1: mat-typography-level(13px, 1.4em),
@@ -36,11 +37,11 @@ $typography: mat-typography-config(
 ///////////////
 $mat-background: (
   background:               var(--vscode-sideBar-background),
-  status-bar:               var(--vscode-activityBar-background),
-  app-bar:                  var(--vscode-activityBar-background),
-  hover:                    rgba(var(--vscode-activityBar-background), 0.1),
-  card:                     var(--vscode-activityBar-background),
-  dialog:                   var(--vscode-activityBar-background),
+  status-bar:               var(--vscode-tab-activeBackground),
+  app-bar:                  var(--vscode-tab-activeBackground),
+  hover:                    rgba(var(--vscode-editorGroupHeader-tabsBackground), 0.1),
+  card:                     var(--vscode-tab-inactiveBackground),
+  dialog:                   var(--vscode-tab-inactiveBackground),
   tooltip:                  var(--vscode-notifications-background),
   disabled-button:          rgba(var(--vscode-sideBar-foreground), 0.12),
   raised-button:            rgba(var(--vscode-sideBar-background), 0.5),
@@ -54,8 +55,8 @@ $mat-background: (
 
 $mat-foreground: (
   base:              var(--vscode-sideBar-foreground),
-  divider:           var(--vscode-sideBar-border),
-  dividers:          var(--vscode-sideBar-border),
+  divider:           var(--vscode-sideBarSectionHeader-border),
+  dividers:          var(--vscode-sideBarSectionHeader-border),
   disabled:          rgba(var(--vscode-sideBar-foreground), 0.5),
   disabled-button:   rgba(var(--vscode-sideBar-foreground), 0.3),
   disabled-text:     rgba(var(--vscode-sideBar-foreground), 0.5),
@@ -77,8 +78,8 @@ $mat-foreground: (
 
 $primary-background: var(--vscode-button-background);
 $primary-foreground: var(--vscode-button-foreground);
-$accent-background: var(--vscode-inputValidation-warningBackground);
-$accent-foreground: var(--vscode-inputValidation-warningForeground);
+$accent-background: var(--vscode-button-secondaryBackground);
+$accent-foreground: var(--vscode-button-secondaryForeground);
 $warn-background: var(--vscode-inputValidation-errorBackground);
 $warn-foreground: var(--vscode-inputValidation-errorForeground);
 
@@ -137,6 +138,7 @@ body.vscode-light {
   @include icon-theme($theme);
   @include toolbar-theme($theme);
   @include chips-theme($theme);
+  @include tabs-theme($theme);
 }
 
 body.vscode-dark {
@@ -156,6 +158,7 @@ body.vscode-dark {
   @include icon-theme($theme);
   @include toolbar-theme($theme);
   @include chips-theme($theme);
+  @include tabs-theme($theme);
 }
 
 

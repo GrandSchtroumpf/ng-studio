@@ -1,0 +1,24 @@
+@import './variables';
+
+@mixin tabs-theme($theme) {
+
+  .mat-tab-header {
+    background-color: var(--vscode-editorGroupHeader-tabsBackground);
+    .mat-tab-link, .mat-tab-label {
+      height: $icon-container;
+      background-color: var(--vscode-tab-inactiveBackground);
+      color: var(--vscode-tab-inactiveForeground);
+  
+      &.mat-tab-label-active, &.mat-tab-link-active {
+        background-color: var(--vscode-tab-activeBackground);
+        color: var(--vscode-tab-activeForeground);
+      }
+    }
+  }
+
+  button.mat-tab-link {
+    background: transparent;
+    border: none;
+  }
+
+}

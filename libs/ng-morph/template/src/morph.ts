@@ -426,9 +426,12 @@ export class TemplateHost {
   update(updates: Partial<HtmlNode>, id: string) {
     const node = this.map[id];
     delete updates['id'];       // Remove id if any
-    delete updates['children']; // Remove children if any
     for (const key in updates) {
-      node[key] = updates[key];
+      if (key === 'children') {
+        updates[key].forEach(child => this.update(child, child.id));
+      } else {
+        node[key] = updates[key];
+      }
     }
   }
 }

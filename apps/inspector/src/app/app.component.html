@@ -1,2 +1,7 @@
+<mat-toolbar>
+  <h4 class="mat-subheading-2">{{ node?.name }}</h4>
+  <button mat-icon-button (click)="save()">
+    <mat-icon>save</mat-icon>
+  </button>
+</mat-toolbar>
 <ast-form-element [form]="form" [schema]="schema" [context]="context$ | async"></ast-form-element>
-<button (click)="save()">Save</button>

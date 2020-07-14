@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
 import { Client } from './client';
 import { BehaviorSubject } from 'rxjs';
 import { ruleForm, styleSchema, toRuleBuilder, fromRuleBuilder } from 'ng-morph-form';
@@ -18,6 +18,13 @@ export class AppComponent implements OnInit {
   selectors$ = this.client.selectors$;
   sections = ['layout'];
 
+  @HostListener('window:keyup', ['$event'])
+  keyEvent(event: KeyboardEvent) {
+    if (event.ctrlKey && event.key === 's') {
+      this.save();
+    }
+  }
+
   constructor(private client: Client, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
@@ -26,8 +33,8 @@ export class AppComponent implements OnInit {
       if (rule) {
         const builder = toRuleBuilder(rule.declarations);
         this.form = ruleForm(builder);
-        this.cdr.markForCheck();
       }
+      this.cdr.markForCheck();
     });
   }
 

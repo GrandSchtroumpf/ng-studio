@@ -49,7 +49,7 @@ export class StylesheetPlugin extends Plugin {
       const selectorTag = getSelectorTag(this.tagNode);
       const selectors = this.host.getSelectors(selectorTag);
       this.emit('selectSelectors', selectors);
-      if (selectors.length === 1) {
+      if (selectors.length) {
         this.selectRule(selectors[0]);
       } else {
         this.emit('selectRule', undefined);

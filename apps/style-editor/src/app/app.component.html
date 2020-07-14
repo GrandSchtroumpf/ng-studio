@@ -1,17 +1,18 @@
 <mat-toolbar *ngIf="selectors$ | async">
-  <h3 class="mat-subheading-2">Selectors</h3>
   <button mat-icon-button color="primary" (click)="save()">
     <mat-icon>save</mat-icon>
   </button>
 </mat-toolbar>
 
-<mat-chip-list *ngIf="selectors$ | async as selectors else noSelector">
+<nav mat-tab-nav-bar *ngIf="selectors$ | async as selectors else noSelector">
   <ng-container *ngIf="selectors.length else noSelector">
     <ng-container *ngFor="let selector of selectors">
-      <mat-chip color="primary" [selected]="rule.selector.id === selector" (click)="select(selector)" >{{ selector }}</mat-chip>
+      <button mat-tab-link (click)="select(selector)" [active]="rule.selector.id === selector">
+        {{ selector }}
+      </button>
     </ng-container>
   </ng-container>
-</mat-chip-list>
+</nav>
 
 <main *ngIf="rule">
   <form-outlet [form]="form" [schema]="schema"></form-outlet>

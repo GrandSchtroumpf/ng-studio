@@ -4,7 +4,7 @@ import {
   FormGroupSchema,
   FormEntity,
 } from 'ng-form-factory';
-import { ChangeDetectionStrategy, NgModule, Component, Input } from '@angular/core';
+import { NgModule, Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
@@ -18,7 +18,7 @@ import { MatListModule } from '@angular/material/list';
       <ng-container *ngFor="let property of schema.controls | keyvalue: keepOrder">
         <mat-list-item class="property">
           <button matListIcon mat-icon-button (click)="clear(property.key)">
-            <mat-icon>not_interested</mat-icon>
+            <mat-icon>highlight_off</mat-icon>
           </button>
           <label matLine>{{ property.key }}</label>
           <form-outlet [form]="form.get(property.key)" [schema]="property.value"></form-outlet>
