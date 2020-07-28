@@ -54,7 +54,6 @@
           "builder": "@nrwl/jest:jest",
           "options": {
             "jestConfig": "apps/vs-code/jest.config.js",
-            "tsConfig": "apps/vs-code/tsconfig.spec.json",
             "passWithNoTests": true
           }
         }
@@ -92,9 +91,7 @@
           "builder": "@nrwl/jest:jest",
           "options": {
             "jestConfig": "libs/ng-morph/jest.config.js",
-            "tsConfig": "libs/ng-morph/tsconfig.spec.json",
-            "passWithNoTests": true,
-            "setupFile": "libs/ng-morph/test-setup.ts"
+            "passWithNoTests": true
           }
         }
       },
@@ -194,9 +191,7 @@
           "builder": "@nrwl/jest:jest",
           "options": {
             "jestConfig": "apps/inspector/jest.config.js",
-            "tsConfig": "apps/inspector/tsconfig.spec.json",
-            "passWithNoTests": true,
-            "setupFile": "apps/inspector/src/test-setup.ts"
+            "passWithNoTests": true
           }
         }
       }
@@ -260,9 +255,7 @@
           "builder": "@nrwl/jest:jest",
           "options": {
             "jestConfig": "libs/ng-morph-form/jest.config.js",
-            "tsConfig": "libs/ng-morph-form/tsconfig.spec.json",
-            "passWithNoTests": true,
-            "setupFile": "libs/ng-morph-form/src/test-setup.ts"
+            "passWithNoTests": true
           }
         }
       },
@@ -304,9 +297,7 @@
           "builder": "@nrwl/jest:jest",
           "options": {
             "jestConfig": "libs/sandbox/jest.config.js",
-            "tsConfig": "libs/sandbox/tsconfig.spec.json",
-            "passWithNoTests": true,
-            "setupFile": "libs/sandbox/src/test-setup.ts"
+            "passWithNoTests": true
           }
         }
       },
@@ -406,9 +397,7 @@
           "builder": "@nrwl/jest:jest",
           "options": {
             "jestConfig": "apps/style-editor/jest.config.js",
-            "tsConfig": "apps/style-editor/tsconfig.spec.json",
-            "passWithNoTests": true,
-            "setupFile": "apps/style-editor/src/test-setup.ts"
+            "passWithNoTests": true
           }
         }
       }
