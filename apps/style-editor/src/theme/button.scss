@@ -11,9 +11,10 @@
   }
 
   button.mat-icon-button, a.mat-icon-button {
-    width: $icon-container;
-    height: $icon-container;
-    line-height: $icon-container;
+    width: $line-height;
+    height: $line-height;
+    line-height: $line-height;
+    padding: calc(($line-height - $icon-size) / 2);
     .mat-icon {
       line-height: $icon-size;
     }

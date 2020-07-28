@@ -1,34 +1,39 @@
-import { Component, Input, NgModule, ViewChild, Renderer2, ElementRef, forwardRef } from '@angular/core';
+import { Component, Input, NgModule, ViewChild, Renderer2, ElementRef, forwardRef, Inject } from '@angular/core';
 import { FormControl, ReactiveFormsModule, ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { FormOutlet, FormControlSchema } from 'ng-form-factory';
 import { PluginClient } from '@remixproject/plugin';
+import { CLIENT } from 'ng-plugin';
 
 import { CommonModule } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { format } from 'path';
 
-export type UrlSchema = FormControlSchema;
+const formats = {
+  Images: ['png', 'webp', 'jpg', 'jpeg', 'svg'],
+  Javascript: ['js', 'jsx', 'ts', 'tsx'],
+}
+export interface UrlSchema extends FormControlSchema {
+  formats: (keyof typeof formats)[];
+}
 
 export function urlSchema(params: Partial<UrlSchema> = {}): UrlSchema {
   return {
     form: 'control',
-    load: 'select',
+    load: 'url',
+    formats: ['Images'],
     ...params,
   };
 }
 
 @Component({
   selector: 'form-url',
-  template: '<form-url-accessor [formControl]="form"></form-url-accessor>',
+  template: '<form-url-accessor [formControl]="form" [schema]="schema"></form-url-accessor>',
+  styles: [':host { display: block }']
 })
 export class FormUrlComponent implements FormOutlet {
   @Input() schema: UrlSchema;
   @Input() form: FormControl;
-
-  constructor(private client: PluginClient<any, any>) {}
-
-  async selectUrl() {
-    const path = await this.client.call('window', 'selectFiles');
-    this.form.setValue(path);
-  }
 }
 
 
@@ -36,8 +41,22 @@ export class FormUrlComponent implements FormOutlet {
   selector: 'form-url-accessor',
   template: `
     <input #input type="url" (change)="onChange($event.target.value)" (blur)="onTouched()" [disabled]="disabled" />
-    <button [disabled]="disabled" (click)="selectUrl()">url</button>
+    <button mat-icon-button [disabled]="disabled" (click)="selectUrl()">
+      <mat-icon>cloud_upload</mat-icon>
+    </button>
   `,
+  styles: [`
+    :host {
+      display: flex;
+      border: var(--vscode-input-border);
+      background: var(--vscode-input-background);
+      color: var(--vscode-input-foreground);
+    }
+    input{
+      border: none;
+      background: transparent;
+    }`
+  ],
   providers: [{
     provide: NG_VALUE_ACCESSOR,
     useExisting: forwardRef(() => FormUrlAccessorComponent),
@@ -49,10 +68,11 @@ export class FormUrlAccessorComponent implements ControlValueAccessor {
   onTouched: () => void;
   disabled: boolean;
 
+  @Input() schema: UrlSchema;
   @ViewChild('input') form: ElementRef<HTMLInputElement>;
 
   constructor(
-    private client: PluginClient<any, any>,
+    @Inject(CLIENT) private client: PluginClient<any, any>,
     private renderer: Renderer2
   ) {}
 
@@ -61,7 +81,9 @@ export class FormUrlAccessorComponent implements ControlValueAccessor {
   }
 
   selectUrl() {
-    this.client.call('window', 'selectFiles').then(path => {
+    const filters = {};
+    this.schema.formats.forEach(name => filters[name] = formats[name]);
+    this.client.call('window', 'selectFile', { filters }).then(path => {
       this.update(path);
       this.onChange(path);
     });
@@ -96,6 +118,6 @@ export class FormUrlAccessorComponent implements ControlValueAccessor {
 @NgModule({
   declarations: [FormUrlComponent, FormUrlAccessorComponent],
   exports: [FormUrlComponent],
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, MatButtonModule, MatIconModule],
 })
 export class FormSelectSchema {}

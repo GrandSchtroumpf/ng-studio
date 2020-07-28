@@ -88,7 +88,7 @@ export const styleSchema: RuleSchema = ruleSchema<RuleBuilder>({
   background: propertyListSchema({
     backgroundColor: colorSchema(),
     backgroundPosition: unitSchema(['px', '%']),
-    backgroundImage: urlSchema()
+    backgroundImage: urlSchema({ formats: ['Images'] })
   }),
   flex: propertyListSchema({
     alignItems: buttonToggleSchema({ icons: alignItemsIcons })

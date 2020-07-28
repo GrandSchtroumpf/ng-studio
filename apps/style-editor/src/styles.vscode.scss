@@ -82,6 +82,7 @@ input, textarea {
   background: var(--vscode-input-background);
   border-color: var(--vscode-input-border);
   color: var(--vscode-input-foreground);
+  text-overflow: ellipsis;
 }
 ::placeholder {
   color: var(--vscode-placeholderForeground-foreground);
