@@ -333,6 +333,7 @@
             ],
             "styles": ["apps/style-editor/src/styles.scss"],
             "scripts": [],
+            "sourceMap": true,
             "outputHashing": "all"
           },
           "configurations": {
@@ -345,7 +346,6 @@
               ],
               "optimization": true,
               "outputHashing": "all",
-              "sourceMap": false,
               "extractCss": true,
               "namedChunks": false,
               "extractLicenses": true,
@@ -426,6 +426,51 @@
             "tsConfig": ["apps/style-editor-e2e/tsconfig.e2e.json"],
             "exclude": ["**/node_modules/**", "!apps/style-editor-e2e/**/*"]
           }
+        }
+      }
+    },
+    "ng-plugin": {
+      "projectType": "library",
+      "root": "libs/ng-plugin",
+      "sourceRoot": "libs/ng-plugin/src",
+      "prefix": "ng-plugin",
+      "architect": {
+        "build": {
+          "builder": "@nrwl/angular:package",
+          "options": {
+            "tsConfig": "libs/ng-plugin/tsconfig.lib.json",
+            "project": "libs/ng-plugin/ng-package.json",
+            "sourceMap": true
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "libs/ng-plugin/tsconfig.lib.prod.json"
+            }
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "libs/ng-plugin/tsconfig.lib.json",
+              "libs/ng-plugin/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**", "!libs/ng-plugin/**/*"]
+          }
+        },
+        "test": {
+          "builder": "@nrwl/jest:jest",
+          "options": {
+            "jestConfig": "libs/ng-plugin/jest.config.js",
+            "tsConfig": "libs/ng-plugin/tsconfig.spec.json",
+            "passWithNoTests": true,
+            "setupFile": "libs/ng-plugin/src/test-setup.ts"
+          }
+        }
+      },
+      "schematics": {
+        "@nrwl/angular:component": {
+          "style": "scss"
         }
       }
     }

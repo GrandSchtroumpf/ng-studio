@@ -19,7 +19,8 @@
     "paths": {
       "ng-morph/*": ["libs/ng-morph/*"],
       "ng-morph-form": ["libs/ng-morph-form/src/index.ts"],
-      "sandbox": ["libs/sandbox/src/index.ts"]
+      "sandbox": ["libs/sandbox/src/index.ts"],
+      "ng-plugin": ["libs/ng-plugin/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

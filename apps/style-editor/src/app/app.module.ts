@@ -10,6 +10,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { AppComponent } from './app.component';
 import { FormFactoryModule } from 'ng-form-factory';
 import { styleFormFactory } from 'ng-morph-form';
+import { CLIENT } from 'ng-plugin';
+import { Client } from './client';
 
 @NgModule({
   declarations: [AppComponent],
@@ -22,7 +24,7 @@ import { styleFormFactory } from 'ng-morph-form';
     MatToolbarModule,
     FormFactoryModule.forRoot(styleFormFactory)
   ],
-  providers: [],
+  providers: [{ provide: CLIENT, useExisting: Client}],
   bootstrap: [AppComponent],
 })
 export class AppModule {}
