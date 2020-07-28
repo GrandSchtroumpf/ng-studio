@@ -1,5 +1,6 @@
 import { Plugin, Profile } from '@remixproject/engine';
 import { window, OpenDialogOptions, workspace } from 'vscode';
+import { relative } from 'path';
 
 export const windowProfile: Profile = {
   name: 'window',
@@ -12,9 +13,9 @@ interface IWindowPlugin {
   /** Display a select window */
   select(options: string[]): Thenable<string>
   /** Display a select window with local file system: can only select a file */
-  selectFile(options?: OpenDialogOptions): Thenable<string>
+  selectFile(options?: Partial<DialogOptions>): Thenable<string>
   /** Display a select window with local file system: can only select a folder */
-  selectFolder(options?: OpenDialogOptions): Thenable<string>
+  selectFolder(options?: Partial<DialogOptions>): Thenable<string>
   /** Display a message with actions button. Returned the button clicked if any */
   alert(message: string, actions?: string[]): Thenable<string>
   /** Display a warning message with actions button. Returned the button clicked if any */
@@ -23,9 +24,27 @@ interface IWindowPlugin {
   error(message: string, actions?: string[]): Thenable<string>
 }
 
-const dialogOptions: OpenDialogOptions = {
-  defaultUri: workspace.workspaceFolders[0].uri,
+const formats = {
+  images: ['png', 'webp', 'jpg', 'jpeg', 'svg'],
+  javascript: ['js', 'jsx', 'ts', 'tsx'],
 }
+interface DialogOptions {
+  relative: boolean;
+  multiple: boolean;
+  formats: (keyof typeof formats)[];
+}
+
+function getDialogOptions(options: Partial<DialogOptions>, dialogOptions: OpenDialogOptions): OpenDialogOptions {
+  const filters = {};
+  options.formats?.forEach(name => filters[name] = formats[name]);
+  return {
+    filters,
+    defaultUri: workspace.workspaceFolders[0].uri,
+    canSelectMany: options.multiple ?? false,
+    ...dialogOptions
+  }
+}
+
 
 export class WindowPlugin extends Plugin implements IWindowPlugin {
 
@@ -42,20 +61,22 @@ export class WindowPlugin extends Plugin implements IWindowPlugin {
     return window.showQuickPick(options);
   }
 
-  selectFile(options: OpenDialogOptions = {}) {
-    return window.showOpenDialog({
-      ...dialogOptions,
-      ...options,
-      canSelectFiles: true,
-    }).then(([file]) => file.fsPath);
+  async selectFile(options: Partial<DialogOptions> = {}) {
+    const dialogOptions = getDialogOptions(options, { canSelectFiles: true });
+    const [file] = await window.showOpenDialog(dialogOptions);
+    const path = file.fsPath;
+    return options.relative
+      ? relative(dialogOptions.defaultUri.fsPath, path)
+      : path;
   }
 
-  selectFolder(options: OpenDialogOptions = {}) {
-    return window.showOpenDialog({
-      ...dialogOptions,
-      ...options,
-      canSelectFolders: true,
-    }).then(([folder]) => folder.fsPath);
+  async selectFolder(options: Partial<DialogOptions> = {}) {
+    const dialogOptions = getDialogOptions(options, { canSelectFolders: true });
+    const [file] = await window.showOpenDialog(dialogOptions);
+    const path = file.fsPath;
+    return options.relative
+      ? relative(dialogOptions.defaultUri.fsPath, path)
+      : path;
   }
 
   alert(message: string, actions: string[] = []) {

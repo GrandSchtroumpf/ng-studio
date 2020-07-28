@@ -14,7 +14,7 @@
     width: $line-height;
     height: $line-height;
     line-height: $line-height;
-    padding: calc(($line-height - $icon-size) / 2);
+    padding: calc(($line-height - $icon-size) / 2) !important;
     .mat-icon {
       line-height: $icon-size;
     }

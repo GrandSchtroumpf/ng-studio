@@ -6,7 +6,7 @@ import { unitSchema } from './unit/schema';
 import { buttonToggleSchema } from './button-toggle/schema';
 import { textAlignIcons, alignItemsIcons } from './statics';
 import { colorSchema } from './color/schema';
-import { urlSchema } from './url';
+import { urlSchema } from './url/schema';
 // MODEL
 type RuleSection = Partial<Record<keyof CSSStyleDeclaration, string>>;
 
@@ -32,8 +32,16 @@ export function toRuleBuilder(d: Partial<CSSStyleDeclaration>): RuleBuilder {
     layout: getKeys(d, ['display']),
     position: getKeys(d, ['position', 'top', 'left', 'right', 'bottom']),
     size: getKeys(d, ['width', 'height', 'margin', 'padding']),
-    text: getKeys(d, ['fontSize', 'textAlign', 'color']),
-    background: getKeys(d, ['backgroundColor']),
+    text: getKeys(d, [
+      'fontSize',
+      'textAlign',
+      'color'
+    ]),
+    background: getKeys(d, [
+      'backgroundColor',
+      'backgroundPosition',
+      'backgroundImage'
+    ]),
     flex: getKeys(d, ['alignItems'])
   }
 }
@@ -64,31 +72,31 @@ function createRuleBuilder(params: Partial<RuleBuilder> = {}): RuleBuilder {
 // SCHEMA
 export interface RuleSchema extends FormGroupSchema<RuleBuilder> {}
 export const styleSchema: RuleSchema = ruleSchema<RuleBuilder>({
-  layout: propertyListSchema({
+  layout: propertyListSchema<CSSStyleDeclaration>({
     display: selectSchema({ options: ['flex', 'block', 'inline-block', 'inline'] }),
   }),
-  position: propertyListSchema({
+  position: propertyListSchema<CSSStyleDeclaration>({
     position: selectSchema({ options: ['relative', 'absolute', 'fixed'] }),
     top: unitSchema(),
     left: unitSchema(),
     bottom: unitSchema(),
     right: unitSchema(),
   }),
-  size: propertyListSchema({
+  size: propertyListSchema<CSSStyleDeclaration>({
     width: unitSchema(['px', '%', 'vw']),
     height: unitSchema(['px', '%', 'vh']),
     margin: unitSchema(['px', '%']),
     padding: unitSchema(['px', '%']),
   }),
-  text: propertyListSchema({
+  text: propertyListSchema<CSSStyleDeclaration>({
     fontSize: unitSchema(['px', 'em', 'rem']),
     textAlign: buttonToggleSchema({ icons: textAlignIcons }),
     color: colorSchema()
   }),
-  background: propertyListSchema({
+  background: propertyListSchema<CSSStyleDeclaration>({
     backgroundColor: colorSchema(),
     backgroundPosition: unitSchema(['px', '%']),
-    backgroundImage: urlSchema({ formats: ['Images'] })
+    backgroundImage: urlSchema({ formats: ['images'] }),
   }),
   flex: propertyListSchema({
     alignItems: buttonToggleSchema({ icons: alignItemsIcons })

@@ -1,30 +1,17 @@
 import { Component, Input, NgModule, ViewChild, Renderer2, ElementRef, forwardRef, Inject } from '@angular/core';
 import { FormControl, ReactiveFormsModule, ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { FormOutlet, FormControlSchema } from 'ng-form-factory';
+import { FormOutlet } from 'ng-form-factory';
 import { PluginClient } from '@remixproject/plugin';
 import { CLIENT } from 'ng-plugin';
 
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { format } from 'path';
+import { ClipboardModule, Clipboard } from '@angular/cdk/clipboard';
+import { UrlSchema } from './schema';
 
-const formats = {
-  Images: ['png', 'webp', 'jpg', 'jpeg', 'svg'],
-  Javascript: ['js', 'jsx', 'ts', 'tsx'],
-}
-export interface UrlSchema extends FormControlSchema {
-  formats: (keyof typeof formats)[];
-}
 
-export function urlSchema(params: Partial<UrlSchema> = {}): UrlSchema {
-  return {
-    form: 'control',
-    load: 'url',
-    formats: ['Images'],
-    ...params,
-  };
-}
+
 
 @Component({
   selector: 'form-url',
@@ -37,10 +24,18 @@ export class FormUrlComponent implements FormOutlet {
 }
 
 
+////////////////////////////
+// CONTROL VALUE ACCESSOR //
+////////////////////////////
+
+
 @Component({
   selector: 'form-url-accessor',
   template: `
-    <input #input type="url" (change)="onChange($event.target.value)" (blur)="onTouched()" [disabled]="disabled" />
+    <button mat-icon-button [disabled]="disabled" (click)="copy()">
+      <mat-icon>content_copy</mat-icon>
+    </button>
+    <input type="url" [value]="value" (change)="onChange($event.target.value)" (blur)="onTouched()" [disabled]="disabled" />
     <button mat-icon-button [disabled]="disabled" (click)="selectUrl()">
       <mat-icon>cloud_upload</mat-icon>
     </button>
@@ -53,6 +48,7 @@ export class FormUrlComponent implements FormOutlet {
       color: var(--vscode-input-foreground);
     }
     input{
+      flex: 1;
       border: none;
       background: transparent;
     }`
@@ -67,24 +63,24 @@ export class FormUrlAccessorComponent implements ControlValueAccessor {
   onChange: (url: string) => void;
   onTouched: () => void;
   disabled: boolean;
+  value: string;
 
   @Input() schema: UrlSchema;
   @ViewChild('input') form: ElementRef<HTMLInputElement>;
 
   constructor(
     @Inject(CLIENT) private client: PluginClient<any, any>,
-    private renderer: Renderer2
+    private clipboard: Clipboard
   ) {}
 
-  private update(value: string) {
-    this.renderer.setProperty(this.form.nativeElement, 'value', value);
+  copy() {
+    this.clipboard.copy(this.value);
   }
 
   selectUrl() {
-    const filters = {};
-    this.schema.formats.forEach(name => filters[name] = formats[name]);
-    this.client.call('window', 'selectFile', { filters }).then(path => {
-      this.update(path);
+    this.client.call('window', 'selectFile', { relative: true, formats: this.schema.formats })
+    .then(path => {
+      this.value = path;
       this.onChange(path);
     });
   }
@@ -94,9 +90,9 @@ export class FormUrlAccessorComponent implements ControlValueAccessor {
       const regex = new RegExp(/\((?<url>.*?)\)/g); // url('https://') -> 'https://'
       const { url } = regex.exec(value).groups;
       const path = url.replace(/("|')/g, '');       // 'https://' -> https://
-      this.update(path);
+      this.value = path;
     } else {
-      this.update('');
+      this.value = '';
     }
   }
 
@@ -117,7 +113,7 @@ export class FormUrlAccessorComponent implements ControlValueAccessor {
 
 @NgModule({
   declarations: [FormUrlComponent, FormUrlAccessorComponent],
-  exports: [FormUrlComponent],
-  imports: [CommonModule, ReactiveFormsModule, MatButtonModule, MatIconModule],
+  exports: [FormUrlComponent, FormUrlAccessorComponent],
+  imports: [CommonModule, ReactiveFormsModule, MatButtonModule, MatIconModule, ClipboardModule],
 })
-export class FormSelectSchema {}
+export class FormUrlSchema {}

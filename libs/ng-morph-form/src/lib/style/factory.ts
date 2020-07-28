@@ -7,7 +7,7 @@ import { ruleSchema } from './rule/schema';
 import { unitSchema, UnitSchema } from './unit/schema';
 import { buttonToggleSchema } from './button-toggle/schema';
 import { colorSchema } from './color/schema';
-import { urlSchema } from './url';
+import { urlSchema } from './url/schema';
 
 interface StyleFormFactory {
   select: string;
