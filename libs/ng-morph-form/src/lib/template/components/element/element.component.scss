@@ -7,3 +7,8 @@ form {
   display: flex;
   flex-direction: column;
 }
+
+textarea {
+  box-sizing: border-box;
+  width: 100%;
+}

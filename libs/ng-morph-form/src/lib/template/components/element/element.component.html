@@ -1,9 +1,8 @@
 <form [formGroup]="form">
 
-  <mat-form-field *ngIf="schema.controls.text">
-    <mat-label>Text</mat-label>
-    <textarea matInput [formControl]="form.text.get('value')" placeholder="Text Content"></textarea>
-  </mat-form-field>
+  <ng-container *ngIf="schema.controls.text">
+    <textarea [formControl]="form.text.get('value')" placeholder="Text Content"></textarea>
+  </ng-container>
 
   <mat-accordion>
     <!-- Attributes -->

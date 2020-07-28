@@ -6,6 +6,7 @@ import { unitSchema } from './unit/schema';
 import { buttonToggleSchema } from './button-toggle/schema';
 import { textAlignIcons, alignItemsIcons } from './statics';
 import { colorSchema } from './color/schema';
+import { urlSchema } from './url';
 // MODEL
 type RuleSection = Partial<Record<keyof CSSStyleDeclaration, string>>;
 
@@ -85,7 +86,9 @@ export const styleSchema: RuleSchema = ruleSchema<RuleBuilder>({
     color: colorSchema()
   }),
   background: propertyListSchema({
-    backgroundColor: colorSchema()
+    backgroundColor: colorSchema(),
+    backgroundPosition: unitSchema(['px', '%']),
+    backgroundImage: urlSchema()
   }),
   flex: propertyListSchema({
     alignItems: buttonToggleSchema({ icons: alignItemsIcons })

@@ -7,6 +7,7 @@ import { ruleSchema } from './rule/schema';
 import { unitSchema, UnitSchema } from './unit/schema';
 import { buttonToggleSchema } from './button-toggle/schema';
 import { colorSchema } from './color/schema';
+import { urlSchema } from './url';
 
 interface StyleFormFactory {
   select: string;
@@ -17,6 +18,7 @@ interface StyleFormFactory {
   unit: string;
   buttonToggle: string | string[];
   color: string;
+  url: string;
 }
 
 export const styleFormFactory: Factory<StyleFormFactory> = {
@@ -52,4 +54,8 @@ export const styleFormFactory: Factory<StyleFormFactory> = {
     component: () => import('./color').then(c => c.FormColorComponent),
     schema: colorSchema
   },
+  url: {
+    component: () => import('./url').then(c => c.FormUrlComponent),
+    schema: urlSchema,
+  }
 } as const
