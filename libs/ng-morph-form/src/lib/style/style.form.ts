@@ -4,7 +4,7 @@ import { propertyListSchema } from './property-list/schema';
 import { ruleSchema } from './rule/schema';
 import { unitSchema } from './unit/schema';
 import { buttonToggleSchema } from './button-toggle/schema';
-import { textAlignIcons, alignItemsIcons } from './statics';
+import { textAlignIcons, alignItemsIcons, backgroundSizeIcons, backgroundPositionIcons } from './statics';
 import { colorSchema } from './color/schema';
 import { urlSchema } from './url/schema';
 // MODEL
@@ -40,7 +40,8 @@ export function toRuleBuilder(d: Partial<CSSStyleDeclaration>): RuleBuilder {
     background: getKeys(d, [
       'backgroundColor',
       'backgroundPosition',
-      'backgroundImage'
+      'backgroundImage',
+      'backgroundSize',
     ]),
     flex: getKeys(d, ['alignItems'])
   }
@@ -95,8 +96,9 @@ export const styleSchema: RuleSchema = ruleSchema<RuleBuilder>({
   }),
   background: propertyListSchema<CSSStyleDeclaration>({
     backgroundColor: colorSchema(),
-    backgroundPosition: unitSchema(['px', '%']),
     backgroundImage: urlSchema({ formats: ['images'] }),
+    backgroundPosition: buttonToggleSchema({ icons: backgroundPositionIcons }),
+    backgroundSize: buttonToggleSchema({ icons: backgroundSizeIcons }),
   }),
   flex: propertyListSchema({
     alignItems: buttonToggleSchema({ icons: alignItemsIcons })

@@ -116,4 +116,8 @@ export class FormUrlAccessorComponent implements ControlValueAccessor {
   exports: [FormUrlComponent, FormUrlAccessorComponent],
   imports: [CommonModule, ReactiveFormsModule, MatButtonModule, MatIconModule, ClipboardModule],
 })
-export class FormUrlSchema {}
+export class FormUrlSchema {
+  constructor() {
+    console.log('URL LOADED');
+  }
+}

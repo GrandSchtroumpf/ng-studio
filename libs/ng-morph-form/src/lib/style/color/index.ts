@@ -2,12 +2,16 @@ import { Component, NgModule, Input } from '@angular/core';
 import { FormOutlet, FormControlSchema } from 'ng-form-factory';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { ColorPickerModule, ColorPickerService } from 'ngx-color-picker';
+
 
 @Component({
   selector: 'form-color',
   template: `
-  <input [formControl]="form" [value]="form.valueChanges | async" type="text" />
-  <input [formControl]="form" [value]="form.valueChanges | async" type="color" />
+  <input (colorPickerChange)="form.setValue($event)"
+    (change)="form.setValue($event.target.value)"
+    [value]="form.valueChanges | async"
+    [colorPicker]="form.valueChanges | async"/>
   `,
   styles: [`
     :host {
@@ -18,9 +22,9 @@ import { CommonModule } from '@angular/common';
     }
     input{
       border: none;
-      background: transparent;
     }`
-  ]
+  ],
+  providers: [ColorPickerService]
 })
 export class FormColorComponent implements FormOutlet {
   @Input() form: FormControl;
@@ -30,6 +34,10 @@ export class FormColorComponent implements FormOutlet {
 @NgModule({
   declarations: [FormColorComponent],
   exports: [FormColorComponent],
-  imports: [CommonModule, ReactiveFormsModule]
+  imports: [CommonModule, ReactiveFormsModule, ColorPickerModule]
 })
-export class FormColorModule {}
+export class FormColorModule {
+  constructor() {
+    console.log('COLOR LOADED');
+  }
+}

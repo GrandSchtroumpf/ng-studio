@@ -46,6 +46,7 @@
     "material-form-factory": "0.0.7",
     "ng-form-factory": "0.0.14",
     "ngast": "^0.4.0",
+    "ngx-color-picker": "^9.1.0",
     "rxjs": "6.5.5",
     "scss-parser": "^1.0.4",
     "ts-morph": "^7.0.3",
