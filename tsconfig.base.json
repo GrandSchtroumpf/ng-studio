@@ -17,7 +17,9 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "ng-morph/*": ["libs/ng-morph/*"],
+      "ng-morph/style": ["libs/ng-morph/style/index.ts"],
+      "ng-morph/template": ["libs/ng-morph/template/index.ts"],
+      "ng-morph/typescript": ["libs/ng-morph/typescript/index.ts"],
       "ng-morph-form": ["libs/ng-morph-form/src/index.ts"],
       "sandbox": ["libs/sandbox/src/index.ts"],
       "ng-plugin": ["libs/ng-plugin/src/index.ts"]

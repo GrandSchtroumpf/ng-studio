@@ -7,12 +7,7 @@ import { ColorPickerModule, ColorPickerService } from 'ngx-color-picker';
 
 @Component({
   selector: 'form-color',
-  template: `
-  <input (colorPickerChange)="form.setValue($event)"
-    (change)="form.setValue($event.target.value)"
-    [value]="form.valueChanges | async"
-    [colorPicker]="form.valueChanges | async"/>
-  `,
+  template: `<input type="color" [formControl]="form"/>`,
   styles: [`
     :host {
       display: flex;

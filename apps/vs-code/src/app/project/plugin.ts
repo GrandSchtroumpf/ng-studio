@@ -2,7 +2,7 @@ import { Plugin, PluginOptions } from '@remixproject/engine';
 import { ExtensionContext, Disposable, window, commands } from 'vscode';
 import { ProjectSymbols, ModuleSymbol, DirectiveSymbol, ResourceResolver } from 'ngast';
 import { getDirectiveNode } from 'ng-morph/typescript';
-import { join } from 'path';
+import { join, relative } from 'path';
 import { ModuleTree, isOwnModule } from './tree';
 import { promises, readFileSync, watch, FSWatcher } from 'fs';
 
@@ -24,15 +24,17 @@ interface ProjectOptions extends PluginOptions {
 
 
 function createLazyCmptRepertory(root: string, modules: ModuleSymbol[]) {
+  // Relative path using unix path format
+  const relativePath = (filePath) => `./${relative(`${root}/src`, filePath).split('\\').join('/')}`;
   const ownModules = modules.filter(isOwnModule).map(module => {
     const cmpts = module.getDeclaredDirectives().filter(directive => directive.isComponent());
     return cmpts
       .map(cmpt => cmpt.getNonResolvedMetadata().type.reference)
-      .map(ref => `${ref.name}: () => import('${ref.filePath.replace('.ts', '')}').then(m => m.${ref.name}),`)
+      .map(ref => `${ref.name}: () => import('${relativePath(ref.filePath.replace('.ts', ''))}').then(m => m.${ref.name}),`)
       .join('\n')
   }).join('\n');
   const code = `export const components = {\n${ownModules}\n};\n`;
-  promises.writeFile(`${root}/components.ts`, code);
+  promises.writeFile(`${root}/src/components.ts`, code);
 }
 
 export class ProjectPlugin extends Plugin {

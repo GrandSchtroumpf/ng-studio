@@ -184,6 +184,13 @@ export function fromContent(node: Content, id: string) {
 ////////////////
 // ATTRIBUTES //
 ////////////////
+export function attributeNode(node: Partial<AttributeNode>): AttributeNode {
+  return {
+    name: node.name || '',
+    value: node.value || ''
+  }
+}
+
 
 export function fromTextAttribute(node: TextAttribute): AttributeNode {
   return {

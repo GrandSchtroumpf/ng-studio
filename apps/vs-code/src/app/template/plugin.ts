@@ -1,7 +1,7 @@
 import { Plugin, PluginOptions } from '@remixproject/engine';
 import { ExtensionContext, Disposable, commands, window, TreeView } from 'vscode';
 import { TemplateTree } from './tree';
-import { TemplateHost, getTemplateHost, HtmlNode, elementNode, TagNode, getParentAndIndex } from 'ng-morph/template';
+import { TemplateHost, getTemplateHost, HtmlNode, elementNode, TagNode, getParentAndIndex, AttributeNode } from 'ng-morph/template';
 import { CompileTemplateMetadata } from '@angular/compiler';
 import { promises as fs, watch } from 'fs';
 import { DirectiveNode } from 'ng-morph/typescript';
@@ -73,10 +73,20 @@ export class TemplatePlugin extends Plugin {
   }
 
   async add(parent: HtmlNode) {
-    const options = this.directiveNode.context.selectors;
-    const base = ['h1', 'button', 'input', 'section'];
-    const name = await this.call('window', 'select', [ ...base, ...options ]);
-    const node = elementNode({ name });
+    const options = this.directiveNode.context.selectors
+      .map(selector => selector.split(','))
+      .flat()
+      .map(selector => selector.trim());
+    const base = ['h1', 'button', 'input'];
+    const selector: string = await this.call('window', 'select', [ ...base, ...options ]);
+
+    // Get attributes in []
+    // TODO: find a cleaner way to extract content of []
+    const attributeNames = selector.match(/(?<=\[).+?(?=\])/g) || [];
+    // TODO: find a cleaner way to get the name
+    const name = selector.split('[').shift();
+    const attributes = attributeNames.map(name => ({ name, value: '' } as AttributeNode));
+    const node = elementNode({ name, attributes });
     this.host.push(node, parent.id);
     this.save();
   }
