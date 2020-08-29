@@ -1,7 +1,7 @@
 import { Plugin, PluginOptions } from '@remixproject/engine';
 import { ExtensionContext, Disposable, commands, window, TreeView } from 'vscode';
 import { TemplateTree } from './tree';
-import { TemplateHost, getTemplateHost, HtmlNode, elementNode, TagNode, getParentAndIndex, AttributeNode } from 'ng-morph/template';
+import { TemplateHost, getTemplateHost, HtmlNode, elementNode, TagNode, getParentAndIndex, AttributeNode, textNode } from 'ng-morph/template';
 import { CompileTemplateMetadata } from '@angular/compiler';
 import { promises as fs, watch } from 'fs';
 import { DirectiveNode } from 'ng-morph/typescript';
@@ -83,10 +83,14 @@ export class TemplatePlugin extends Plugin {
     // Get attributes in []
     // TODO: find a cleaner way to extract content of []
     const attributeNames = selector.match(/(?<=\[).+?(?=\])/g) || [];
+    const attributes = attributeNames.map(name => ({ name, value: '' } as AttributeNode));
     // TODO: find a cleaner way to get the name
     const name = selector.split('[').shift();
-    const attributes = attributeNames.map(name => ({ name, value: '' } as AttributeNode));
-    const node = elementNode({ name, attributes });
+    // Add text
+    const children = ['h1', 'button'].includes(name)
+      ? [textNode(name)]
+      : [];
+    const node = elementNode({ name, attributes, children });
     this.host.push(node, parent.id);
     this.save();
   }
