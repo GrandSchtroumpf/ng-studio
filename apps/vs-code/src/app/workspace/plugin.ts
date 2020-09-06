@@ -52,11 +52,7 @@ export class WorkspacePlugin extends Plugin {
   }
 
   selectProject(symbol: ProjectSymbol) {
-    console.log('Start');
-    const start = Date.now();
     symbol.init();
-    console.log((Date.now() - start) / 1000);
-    console.log('End');
     symbol.getModules().forEach(module => console.log(getModuleName(module)))
     this.tree.render();
   }

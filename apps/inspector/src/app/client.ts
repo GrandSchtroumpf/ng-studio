@@ -3,11 +3,14 @@ import { PluginClient } from '@remixproject/plugin';
 import { createWebviewClient } from '@remixproject/plugin-vscode'
 import { HtmlNode } from 'ng-morph/template';
 import { BehaviorSubject } from 'rxjs';
-import { DirectiveNode, DirectiveContext } from 'ng-morph/typescript';
+import { DirectiveNode, DirectiveContext, ComponentState } from 'ng-morph/typescript';
 
 
 @Injectable({ providedIn: 'root' })
 export class InspectorClient extends PluginClient<any, any> {
+
+  private component = new BehaviorSubject<ComponentState>(null);
+  public component$ = this.component.asObservable();
 
   private node = new BehaviorSubject<HtmlNode>(null);
   public node$ = this.node.asObservable();
@@ -19,6 +22,7 @@ export class InspectorClient extends PluginClient<any, any> {
     super();
     createWebviewClient(this)
     this.onload(() => {
+      this.on('workspace', 'selectComponent', (component: ComponentState) => this.component.next(component));
       this.on('project', 'selectDirective', (node: DirectiveNode) => this.context.next(node.context));
       this.on('template', 'selectNode', (node: HtmlNode) => this.node.next(node));
     })

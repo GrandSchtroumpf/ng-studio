@@ -16,6 +16,7 @@ export class AppComponent implements OnInit {
   node: TagNode;
   node$ = this.client.node$;
   context$ = this.client.context$;
+  component$ = this.client.component$;
 
   constructor(
     private client: InspectorClient,

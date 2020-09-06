@@ -17,7 +17,8 @@
             "assets": [
               "apps/vs-code/src/assets",
               "apps/vs-code/src/package.json"
-            ]
+            ],
+            "sourceMap": true
           },
           "configurations": {
             "production": {
@@ -465,6 +466,50 @@
             "tsConfig": "libs/ng-plugin/tsconfig.spec.json",
             "passWithNoTests": true,
             "setupFile": "libs/ng-plugin/src/test-setup.ts"
+          }
+        }
+      },
+      "schematics": {
+        "@nrwl/angular:component": {
+          "style": "scss"
+        }
+      }
+    },
+    "ng-ast": {
+      "projectType": "library",
+      "root": "libs/ng-ast",
+      "sourceRoot": "libs/ng-ast/src",
+      "prefix": "ng-studio",
+      "architect": {
+        "build": {
+          "builder": "@nrwl/angular:package",
+          "options": {
+            "tsConfig": "libs/ng-ast/tsconfig.lib.json",
+            "project": "libs/ng-ast/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "libs/ng-ast/tsconfig.lib.prod.json"
+            }
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "libs/ng-ast/tsconfig.lib.json",
+              "libs/ng-ast/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**", "!libs/ng-ast/**/*"]
+          }
+        },
+        "test": {
+          "builder": "@nrwl/jest:jest",
+          "options": {
+            "jestConfig": "libs/ng-ast/jest.config.js",
+            "tsConfig": "libs/ng-ast/tsconfig.spec.json",
+            "passWithNoTests": true,
+            "setupFile": "libs/ng-ast/src/test-setup.ts"
           }
         }
       },

@@ -5,7 +5,6 @@ import { join } from 'path';
 import { promises as fs, readFileSync } from 'fs';
 import { ProjectSymbol } from './project.symbol';
 
-
 export class WorkspaceSymbol {
   private config: workspaces.WorkspaceDefinition;
   private root: string;

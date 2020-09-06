@@ -17,8 +17,7 @@
       "outFiles": [
         "${workspaceFolder}/dist/apps/vs-code",
         "${workspaceFolder}/dist/apps/vs-code/studio",
-      ],
-      "preLaunchTask": "${defaultBuildTask}"
+      ]
     }
   ]
 }

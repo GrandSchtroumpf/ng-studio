@@ -1,5 +1,5 @@
-import { createProgram, Program, createModuleResolutionCache, TypeChecker, getOriginalNode, Declaration } from 'typescript';
-import { Type } from '@angular/compiler';
+import { createProgram, Program, createModuleResolutionCache, TypeChecker, getOriginalNode, Declaration, isIdentifier, Identifier, isToken } from 'typescript';
+import { Type, Expression, WrappedNodeExpr } from '@angular/compiler';
 import { readConfiguration } from '@angular/compiler-cli';
 import { NgCompilerHost } from '@angular/compiler-cli/src/ngtsc/core';
 import { NgCompilerOptions } from '@angular/compiler-cli/src/ngtsc/core/api';
@@ -11,27 +11,34 @@ import { IncrementalDriver } from '@angular/compiler-cli/src/ngtsc/incremental';
 import { DefaultImportTracker, ReferenceEmitStrategy, AliasingHost, Reference, ReferenceEmitter, LogicalProjectStrategy, RelativePathStrategy, PrivateExportAliasingHost, LocalIdentifierStrategy, AbsoluteModuleStrategy, AliasStrategy, UnifiedModulesStrategy, UnifiedModulesAliasingHost, ModuleResolver } from '@angular/compiler-cli/src/ngtsc/imports';
 import { InjectableClassRegistry, CompoundMetadataRegistry, DtsMetadataReader, LocalMetadataRegistry, CompoundMetadataReader } from '@angular/compiler-cli/src/ngtsc/metadata';
 import { MetadataDtsModuleScopeResolver, LocalModuleScopeRegistry, ComponentScopeReader } from '@angular/compiler-cli/src/ngtsc/scope';
-import { getSourceFileOrNull, isDtsPath } from '@angular/compiler-cli/src/ngtsc/util/src/typescript';
+import { getSourceFileOrNull, isDtsPath, isFromDtsFile } from '@angular/compiler-cli/src/ngtsc/util/src/typescript';
 import { NgModuleRouteAnalyzer } from '@angular/compiler-cli/src/ngtsc/routing';
 import { CycleAnalyzer, ImportGraph } from '@angular/compiler-cli/src/ngtsc/cycles';
-import { HostResourceLoader } from '@angular/compiler-cli/src/ngtsc/resource';
+import { AdapterResourceLoader } from '@angular/compiler-cli/src/ngtsc/resource';
 import { ReferenceGraph } from '@angular/compiler-cli/src/ngtsc/entry_point';
-import { TraitCompiler, DtsTransformRegistry, ClassRecord } from '@angular/compiler-cli/src/ngtsc/transform';
+import { DtsTransformRegistry, DecoratorHandler } from '@angular/compiler-cli/src/ngtsc/transform';
 import { PerfRecorder, NOOP_PERF_RECORDER } from '@angular/compiler-cli/src/ngtsc/perf';
 import { ModuleWithProvidersScanner } from '@angular/compiler-cli/src/ngtsc/modulewithproviders';
-import { AnnotationNames, hasDecoratorName } from './utils';
-import { ModuleSymbol } from './module.symbol';
+import { NgModuleSymbol } from './module.symbol';
+import { NgastTraitCompiler } from './trait-compiler';
+import { ComponentSymbol } from './component.symbol';
+import { symbolFactory, FactoryOutput } from './find-symbol';
+import { InjectableSymbol } from './injectable.symbol';
+import { DirectiveSymbol } from './directive.symbol';
+import { PipeSymbol } from './pipe.symbol';
+import { AnnotationNames, getDtsAnnotation, getLocalAnnotation } from './utils';
+import { ProviderRegistry } from './provider';
 
 interface Toolkit {
   program: Program;
   host: NgCompilerHost;
-  traitCompiler: NgastCompiler;
+  traitCompiler: NgastTraitCompiler;
   // Handler
   injectableHandler: InjectableDecoratorHandler;
   pipeHandler: PipeDecoratorHandler;
   directiveHandler: DirectiveDecoratorHandler;
   moduleHandler: NgModuleDecoratorHandler;
-  cmptHandler: ComponentDecoratorHandler;
+  componentHandler: ComponentDecoratorHandler;
 
   checker: TypeChecker;
   reflector: TypeScriptReflectionHost;
@@ -42,18 +49,19 @@ interface Toolkit {
   metaRegistry: CompoundMetadataRegistry;
   scopeRegistry: LocalModuleScopeRegistry;
   metaReader: CompoundMetadataReader;
-  aliasingHost: AliasingHost;
+  aliasingHost: AliasingHost | null;
   localMetaReader: LocalMetadataRegistry;
   refEmitter: ReferenceEmitter;
   referencesRegistry: ReferencesRegistry;
   routeAnalyzer: NgModuleRouteAnalyzer;
 
-  resourceManager: HostResourceLoader;
+  resourceManager: AdapterResourceLoader;
   moduleResolver: ModuleResolver;
   cycleAnalyzer: CycleAnalyzer;
   incrementalDriver: IncrementalDriver;
   dtsTransforms: DtsTransformRegistry;
   mwpScanner: ModuleWithProvidersScanner;
+  providerRegistry: ProviderRegistry;s
 }
 
 // code from :
@@ -76,32 +84,6 @@ class ReferenceGraphAdapter implements ReferencesRegistry {
   }
 }
 
-/** TraitCompiler with friendly interface */
-export class NgastCompiler extends TraitCompiler {
-
-  /** Perform analysis for one node */
-  async analyzeNode(node: ClassDeclaration<Declaration>) {
-    this.analyzeClass(node, null);
-  }
-
-  allRecords(annotation?: AnnotationNames) {
-    const records: ClassRecord[] = [];
-    this.fileToClasses.forEach(nodes => {
-      nodes.forEach(node => {
-        const record = this.recordFor(node);
-        if (record) {
-          // If an annotation is given return only the expected annotated node
-          if (!annotation || (annotation && hasDecoratorName(record.node, annotation))) {
-            records.push(record);
-          }
-        }
-      });
-    });
-    return records;
-  }
-
-}
-
 // All the code here comes from the ngtsc Compiler file, for more detail see :
 // https://github.com/angular/angular/blob/9.1.x/packages/compiler-cli/src/ngtsc/core/src/compiler.ts
 
@@ -111,6 +93,7 @@ export class WorkspaceSymbols {
   private toolkit: Partial<Toolkit> = {};
   private isCore = false;
   private analysed = false;
+  private oldProgram: Program
 
   constructor(
     private tsconfigPath: string,
@@ -122,31 +105,14 @@ export class WorkspaceSymbols {
     this.rootNames = config.rootNames;
   }
 
+  /////////////////////////////
   // ------ PUBLIC API ----- //
-
-  /** Angular wrapper around the typescript host compiler */
-  get host() {
-    return this.lazy('host', () => {
-      const baseHost = new NgtscCompilerHost(this.fs, this.options);
-      return NgCompilerHost.wrap(baseHost, this.rootNames, this.options);
-    });
-  }
-
-
-  /** Typescript program */
-  get program() {
-    return this.lazy('program', () => createProgram({
-        host: this.host,
-        rootNames: this.host.inputFiles,
-        options: this.options
-      })
-    );
-  }
+  /////////////////////////////
 
   /** Process all classes in the program */
   get traitCompiler() {
-    return this.lazy('traitCompiler', () => new NgastCompiler(
-        [this.cmptHandler, this.directiveHandler, this.pipeHandler, this.injectableHandler, this.moduleHandler],
+    return this.lazy('traitCompiler', () => new NgastTraitCompiler(
+        [this.componentHandler, this.directiveHandler as any, this.pipeHandler, this.injectableHandler, this.moduleHandler]  as DecoratorHandler<unknown, unknown, unknown>[],
         this.reflector,
         this.perfRecorder,
         this.incrementalDriver,
@@ -156,8 +122,121 @@ export class WorkspaceSymbols {
     );
   }
 
+  /** Collects information about local NgModules, Directives, Components, and Pipes (declare in the ts.Program) */
+  public get scopeRegistry() {
+    return this.lazy('scopeRegistry', () => {
+      const depScopeReader = new MetadataDtsModuleScopeResolver(this.dtsReader, this.aliasingHost);
+      return new LocalModuleScopeRegistry(this.localMetaReader, depScopeReader, this.refEmitter, this.aliasingHost);
+    });
+  }
+
+  
+  /** Evaluate typecript Expression & update the dependancy graph accordingly */
+  public get evaluator() {
+    return this.lazy('evaluator', () => new PartialEvaluator(
+      this.reflector,
+      this.checker,
+      this.incrementalDriver.depGraph
+    ));
+  }
+
+  /** Keep track of the providers other than Injectable */
+  get providerRegistry() {
+    return this.lazy('providerRegistry', () => new ProviderRegistry(this))
+  }
+
+  public getClassRecords() {
+    this.ensureAnalysis();
+    return this.traitCompiler.allRecords();
+  }
+
+  public getAllModules() {
+    this.ensureAnalysis();
+    return this.traitCompiler.allRecords('NgModule').map(({ node }) => new NgModuleSymbol(this, node));
+  }
+
+  public getAllComponents() {
+    this.ensureAnalysis();
+    return this.traitCompiler.allRecords('Component').map(({ node }) => new ComponentSymbol(this, node));
+  }
+
+
+  public getAllDirectives() {
+    this.ensureAnalysis();
+    return this.traitCompiler.allRecords('Directive').map(({ node }) => new DirectiveSymbol(this, node));
+  }
+
+  public getAllInjectable() {
+    this.ensureAnalysis();
+    return this.traitCompiler.allRecords('Injectable').map(({ node }) => new InjectableSymbol(this, node));
+  }
+
+  public getAllPipes() {
+    this.ensureAnalysis();
+    return this.traitCompiler.allRecords('Pipe').map(({ node }) => new PipeSymbol(this, node));
+  }
+
+
+  /** Find a symbol based on the class expression */
+  public findSymbol(token: Expression) {
+    if (token instanceof WrappedNodeExpr) {
+      if (isIdentifier(token.node)) {
+        const decl = this.reflector.getDeclarationOfIdentifier(token.node);
+        if (decl?.node && this.reflector.isClass(decl.node)) {
+          return this.getSymbol(decl.node);
+        } else if (decl?.node) {
+          return this.providerRegistry.getProvider(decl.node);
+        }
+      } else if (isToken(token.node)) {
+        return this.providerRegistry.getProvider(token.node);
+      }
+    }
+  }
+
+  /** Find a symbol based on the class expression */
+  public getSymbol<A extends AnnotationNames>(node: ClassDeclaration): FactoryOutput<A> | undefined {
+    const isDts = isFromDtsFile(node);
+    let annotation: AnnotationNames | undefined;
+    if (isDts) {
+      const members = this.reflector.getMembersOfClass(node);
+      annotation = getDtsAnnotation(members);
+    } else {
+      annotation = getLocalAnnotation(node.decorators);
+    }
+    if (annotation && (annotation in symbolFactory)) {
+      const factory = symbolFactory[annotation];
+      return factory(this, node) as FactoryOutput<A>;
+    }
+  }
+
+  
+  /////////////////////////
+  // ----- PRIVATE ----- //
+  /////////////////////////
+
+  /** Angular wrapper around the typescript host compiler */
+  // TODO: add reusable program
+  private get host() {
+    return this.lazy('host', () => {
+      const baseHost = new NgtscCompilerHost(this.fs, this.options);
+      return NgCompilerHost.wrap(baseHost, this.rootNames, this.options, this.oldProgram || null);
+    });
+  }
+
+
+  /** Typescript program */
+  private get program() {
+    return this.lazy('program', () => createProgram({
+        host: this.host,
+        rootNames: this.host.inputFiles,
+        options: this.options
+      })
+    );
+  }
+
+
   /** Handler for @Injectable() annotations */
-  get injectableHandler() {
+  private get injectableHandler() {
     return this.lazy('injectableHandler', () => new InjectableDecoratorHandler(
         this.reflector,
         this.defaultImportTracker,
@@ -169,7 +248,7 @@ export class WorkspaceSymbols {
   }
 
   /** Handler for @Pipe() annotations */
-  get pipeHandler() {
+  private get pipeHandler() {
     return this.lazy('pipeHandler', () => new PipeDecoratorHandler(
         this.reflector,
         this.evaluator,
@@ -183,7 +262,7 @@ export class WorkspaceSymbols {
   }
 
   /** Handler for @Directive() annotations */
-  get directiveHandler() {
+  private get directiveHandler() {
     return this.lazy('directiveHandler', () => new DirectiveDecoratorHandler(
         this.reflector,
         this.evaluator,
@@ -193,13 +272,14 @@ export class WorkspaceSymbols {
         this.defaultImportTracker,
         this.injectableRegistry,
         this.isCore,
-        this.options.annotateForClosureCompiler
+        !!this.options.annotateForClosureCompiler,
+        !!this.options.compileNonExportedClasses
       )
     );
   }
 
   /** Handler for @NgModule() annotations */
-  get moduleHandler() {
+  private get moduleHandler() {
     return this.lazy('moduleHandler', () => new NgModuleDecoratorHandler(
         this.reflector,
         this.evaluator,
@@ -212,7 +292,7 @@ export class WorkspaceSymbols {
         this.refEmitter,
         this.host.factoryTracker,
         this.defaultImportTracker,
-        this.options.annotateForClosureCompiler,
+        !!this.options.annotateForClosureCompiler,
         this.injectableRegistry,
         this.options.i18nInLocale
       )
@@ -220,8 +300,8 @@ export class WorkspaceSymbols {
   }
 
   /** Handler for @Component() annotations */
-  get cmptHandler() {
-    return this.lazy('cmptHandler', () => new ComponentDecoratorHandler(
+  private get componentHandler() {
+    return this.lazy('componentHandler', () => new ComponentDecoratorHandler(
         this.reflector,
         this.evaluator,
         this.metaRegistry,
@@ -234,99 +314,37 @@ export class WorkspaceSymbols {
         this.options.preserveWhitespaces || false,
         this.options.i18nUseExternalIds !== false,
         this.options.enableI18nLegacyMessageIdFormat !== false,
+        this.options.i18nNormalizeLineEndingsInICUs,
         this.moduleResolver,
         this.cycleAnalyzer,
         this.refEmitter,
         this.defaultImportTracker,
         this.incrementalDriver.depGraph,
         this.injectableRegistry,
-        this.options.annotateForClosureCompiler,
+        !!this.options.annotateForClosureCompiler,
       )
     );
   }
 
-  /** Register metadata from local NgModules, Directives, Components, and Pipes */
-  public get metaRegistry() {
-    return this.lazy('metaRegistry', () => new CompoundMetadataRegistry([ this.localMetaReader, this.scopeRegistry ]));
+
+  /** Static reflection of declarations using the TypeScript type checker */
+  private get reflector() {
+    return this.lazy('reflector', () => new TypeScriptReflectionHost(this.checker));
   }
-
-  /** Register metadata from local declaration files (.d.ts) */
-  public get metaReader() {
-    return this.lazy('metaReader', () => new CompoundMetadataReader([ this.localMetaReader, this.dtsReader ]));
-  }
-  
-  /** Collects information about local NgModules, Directives, Components, and Pipes (declare in the ts.Program) */
-  public get scopeRegistry() {
-    return this.lazy('scopeRegistry', () => {
-      const depScopeReader = new MetadataDtsModuleScopeResolver(this.dtsReader, this.aliasingHost);
-      return new LocalModuleScopeRegistry(this.localMetaReader, depScopeReader, this.refEmitter, this.aliasingHost);
-    });
-  }
-
-
-  public getAllModules() {
-    this.ensureAnalysis();
-    return this.traitCompiler.allRecords('NgModule').map(({ node }) => new ModuleSymbol(this, node));
-  }
-
-  /** Perform analysis on all projects */
-  private analyzeAll() {
-    // Analyse all files
-    const analyzeSpan = this.perfRecorder.start('analyze');
-    for (const sf of this.program.getSourceFiles()) {
-      if (sf.isDeclarationFile) {
-        continue;
-      }
-      const analyzeFileSpan = this.perfRecorder.start('analyzeFile', sf);
-      this.traitCompiler.analyzeSync(sf);
-      const addTypeReplacement = (node: Declaration, type: Type): void => {
-        this.dtsTransforms.getReturnTypeTransform(sf).addTypeReplacement(node, type);
-      };
-      this.mwpScanner.scan(sf, { addTypeReplacement });
-      this.perfRecorder.stop(analyzeFileSpan);
-    }
-    this.perfRecorder.stop(analyzeSpan);
-    this.traitCompiler.resolve();
-
-    // Record NgModule Scope Dependancies
-    const recordSpan = this.perfRecorder.start('recordDependencies');
-    const depGraph = this.incrementalDriver.depGraph;
-    for (const scope of this.scopeRegistry.getCompilationScopes()) {
-      const file = scope.declaration.getSourceFile();
-      const ngModuleFile = scope.ngModule.getSourceFile();
-      depGraph.addTransitiveDependency(ngModuleFile, file);
-      depGraph.addDependency(file, ngModuleFile);
-      const meta = this.metaReader.getDirectiveMetadata(new Reference(scope.declaration));
-      // For components
-      if (meta !== null && meta.isComponent) {
-        depGraph.addTransitiveResources(ngModuleFile, file);
-        for (const directive of scope.directives) {
-          depGraph.addTransitiveDependency(file, directive.ref.node.getSourceFile());
-        }
-        for (const pipe of scope.pipes) {
-          depGraph.addTransitiveDependency(file, pipe.ref.node.getSourceFile());
-        }
-      }
-    }
-    this.perfRecorder.stop(recordSpan);
-
-    // Calculate which files need to be emitted
-    this.incrementalDriver.recordSuccessfulAnalysis(this.traitCompiler);
-    this.analysed = true;
-  }
-
-
-
-  // ----- PRIVATE ----- //
 
   /** Typescript type checker use to semantically analyze a source file */
   private get checker() {
     return this.lazy('checker', () => this.program.getTypeChecker());
   }
 
-  /** Static reflection of declarations using the TypeScript type checker */
-  private get reflector() {
-    return this.lazy('reflector', () => new TypeScriptReflectionHost(this.checker));
+  /** Register metadata from local NgModules, Directives, Components, and Pipes */
+  private get metaRegistry() {
+    return this.lazy('metaRegistry', () => new CompoundMetadataRegistry([ this.localMetaReader, this.scopeRegistry ]));
+  }
+
+  /** Register metadata from local declaration files (.d.ts) */
+  private get metaReader() {
+    return this.lazy('metaReader', () => new CompoundMetadataReader([ this.localMetaReader, this.dtsReader ]));
   }
 
   /** Registers and records usages of Identifers that came from default import statements (import X from 'some/module') */
@@ -344,18 +362,10 @@ export class WorkspaceSymbols {
     return this.lazy('incrementalDriver', () => IncrementalDriver.fresh(this.program));
   }
 
-  /** Evaluate typecript Expression & update the dependancy graph accordingly */
-  private get evaluator() {
-    return this.lazy('evaluator', () => new PartialEvaluator(
-      this.reflector,
-      this.checker,
-      this.incrementalDriver.depGraph
-    ));
-  }
 
   /** (pre)Load resources using cache */
   private get resourceManager() {
-    return this.lazy('resourceManager', () => new HostResourceLoader(this.host, this.options));
+    return this.lazy('resourceManager', () => new AdapterResourceLoader(this.host, this.options));
   }
 
   /** Resolve the module source-files references in lazy-loaded routes */
@@ -400,7 +410,7 @@ export class WorkspaceSymbols {
         if (rootDir !== undefined || rootDirs?.length) {
           localImportStrategy = new LogicalProjectStrategy(
             this.reflector,
-            new LogicalFileSystem([ ...this.host.rootDirs ])
+            new LogicalFileSystem([ ...this.host.rootDirs ], this.host)
           );
         } else {
           localImportStrategy = new RelativePathStrategy(this.reflector);
@@ -451,11 +461,6 @@ export class WorkspaceSymbols {
     });
   }
 
-  /** Analyze lazy loaded routes */
-  private get routeAnalyzer() {
-    return this.lazy('routeAnalyzer', () => new NgModuleRouteAnalyzer(this.moduleResolver, this.evaluator));
-  }
-
   /** Analyzes a `ts.Program` for cycles. */
   private get cycleAnalyzer() {
     return this.lazy('cycleAnalyzer', () => {
@@ -473,18 +478,108 @@ export class WorkspaceSymbols {
   private get mwpScanner() {
     return this.lazy('mwpScanner', () => new ModuleWithProvidersScanner(this.reflector, this.evaluator, this.refEmitter));
   }
+  
+  /** Analyze lazy loaded routes */
+  public get routeAnalyzer() {
+    return this.lazy('routeAnalyzer', () => new NgModuleRouteAnalyzer(this.moduleResolver, this.evaluator));
+  }
 
   /** Lazy load & memorize every tool in the `WorkspaceSymbols`'s toolkit */
-  private lazy<K extends keyof Toolkit>(key: K, load: () => Toolkit[K]): Partial<Toolkit>[K] {
+  private lazy<K extends keyof Toolkit>(key: K, load: () => Toolkit[K]): Toolkit[K] {
     if (!this.toolkit[key]) {
       this.toolkit[key] = load();
     }
-    return this.toolkit[key];
+    return this.toolkit[key] as Toolkit[K];
+  }
+
+  public async preAnalyse(): Promise<boolean> {
+    return new Promise(async (res, rej) => {
+      const promises = [];
+      for (const sf of this.program.getSourceFiles()) {
+        if (!sf.isDeclarationFile) {
+          promises.push(this.traitCompiler.analyzeAsync(sf));
+        }
+      }
+      await Promise.all(promises);
+      this.traitCompiler.resolve();
+      const depGraph = this.incrementalDriver.depGraph;
+      for (const scope of this.scopeRegistry.getCompilationScopes()) {
+        const file = scope.declaration.getSourceFile();
+        const ngModuleFile = scope.ngModule.getSourceFile();
+        depGraph.addTransitiveDependency(ngModuleFile, file);
+        depGraph.addDependency(file, ngModuleFile);
+        const meta = this.metaReader.getDirectiveMetadata(new Reference(scope.declaration));
+        // For components
+        if (meta !== null && meta.isComponent) {
+          depGraph.addTransitiveResources(ngModuleFile, file);
+          for (const directive of scope.directives) {
+            depGraph.addTransitiveDependency(file, directive.ref.node.getSourceFile());
+          }
+          for (const pipe of scope.pipes) {
+            depGraph.addTransitiveDependency(file, pipe.ref.node.getSourceFile());
+          }
+        }
+      }
+      this.incrementalDriver.recordSuccessfulAnalysis(this.traitCompiler);
+      this.analysed = true;
+      res(true);
+    })
+  }
+
+  /** Perform analysis on all projects */
+  private analyzeAll() {
+    // Analyse all files
+    const analyzeSpan = this.perfRecorder.start('analyze');
+    for (const sf of this.program.getSourceFiles()) {
+      if (sf.isDeclarationFile) {
+        continue;
+      }
+      const analyzeFileSpan = this.perfRecorder.start('analyzeFile', sf);
+      this.traitCompiler.analyzeSync(sf);
+      // Scan for ModuleWithProvider
+      const addTypeReplacement = (node: Declaration, type: Type): void => {
+        this.dtsTransforms.getReturnTypeTransform(sf).addTypeReplacement(node, type);
+      };
+      this.mwpScanner.scan(sf, { addTypeReplacement });
+      this.perfRecorder.stop(analyzeFileSpan);
+    }
+    this.perfRecorder.stop(analyzeSpan);
+
+    // Resolve compilation
+    this.traitCompiler.resolve();
+
+    // Record NgModule Scope dependencies
+    const recordSpan = this.perfRecorder.start('recordDependencies');
+    const depGraph = this.incrementalDriver.depGraph;
+    for (const scope of this.scopeRegistry.getCompilationScopes()) {
+      const file = scope.declaration.getSourceFile();
+      const ngModuleFile = scope.ngModule.getSourceFile();
+      depGraph.addTransitiveDependency(ngModuleFile, file);
+      depGraph.addDependency(file, ngModuleFile);
+      const meta = this.metaReader.getDirectiveMetadata(new Reference(scope.declaration));
+      // For components
+      if (meta !== null && meta.isComponent) {
+        depGraph.addTransitiveResources(ngModuleFile, file);
+        for (const directive of scope.directives) {
+          depGraph.addTransitiveDependency(file, directive.ref.node.getSourceFile());
+        }
+        for (const pipe of scope.pipes) {
+          depGraph.addTransitiveDependency(file, pipe.ref.node.getSourceFile());
+        }
+      }
+    }
+    this.perfRecorder.stop(recordSpan);
+
+    // Calculate which files need to be emitted
+    this.incrementalDriver.recordSuccessfulAnalysis(this.traitCompiler);
+    this.analysed = true;
   }
 
   private ensureAnalysis() {
     if (!this.analysed) {
       this.analyzeAll();
+      this.providerRegistry.recordAll();
+      // TODO: Implements the ProviderRegistry to keep track of FactoryProvider, ValueProvider, ...
     }
   }
 }
