@@ -7,7 +7,7 @@ import { watch, FSWatcher } from 'fs';
 import { join } from 'path';
 import { WorkspaceTree, WorkspaceItem } from './tree';
 import { getComponentState, isProjectType } from 'ng-morph/typescript';
-import { exec, ChildProcess } from 'child_process';
+import { ChildProcess } from 'child_process';
 
 interface WorkspaceOptions extends PluginOptions {
   root: string;
@@ -50,7 +50,8 @@ export class WorkspacePlugin extends Plugin {
     // Run build on every application
     for (const [name, project] of workspace.projects.entries()) {
       if (isProjectType(project, 'application')) {
-        this.childProcess.push(this.watchBuild(root, name));
+        this.watchBuild(root, name)
+        // this.childProcess.push(this.watchBuild(root, name));
       }
     }
   }
@@ -72,9 +73,8 @@ export class WorkspacePlugin extends Plugin {
 
   // TODO : use vscode terminal
   watchBuild(root: string, projectName: string) {
-    const child = exec(`npx ng build ${projectName} --watch`, { cwd: root });
-    child.stdout.on('data', (data) => console.log(data));
-    return child;
+    const name = `build:${projectName}`;
+    this.call('terminal', 'exec', `npx ng build ${projectName} --watch`, { name })
   }
 
   selectProject(name: string, project: workspaces.ProjectDefinition) {

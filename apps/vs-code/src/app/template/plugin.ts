@@ -3,17 +3,18 @@ import { ExtensionContext, Disposable, commands, window, TreeView } from 'vscode
 import { TemplateTree } from './tree';
 import { TemplateHost, getTemplateHost, HtmlNode, elementNode, TagNode, getParentAndIndex, AttributeNode, textNode, isElementNode } from 'ng-morph/template';
 import { promises as fs, watch } from 'fs';
-import { DirectiveNode, ComponentState } from 'ng-morph/typescript';
+import { ComponentState } from 'ng-morph/typescript';
 import { Node } from '@angular/compiler/src/render3/r3_ast';
 
 interface TreePluginOptions extends PluginOptions {
   context: ExtensionContext;
 }
 
+const textTags = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'button'];
+
 export class TemplatePlugin extends Plugin {
   private listeners: Disposable[] = [];
   protected options: TreePluginOptions;
-  private directiveNode: DirectiveNode;
   methods = ['init', 'remove', 'add', 'selectNode', 'updateNode', 'updateAst'];
   state: ComponentState;
   templateUrl?: string;
@@ -33,7 +34,7 @@ export class TemplatePlugin extends Plugin {
     this.treeView = window.createTreeView('templateTree', { treeDataProvider: this.tree });
     const select = commands.registerCommand('template.select', (item) => this.selectNode(item));
     const remove = commands.registerCommand('template.remove', (node: HtmlNode) => this.remove(node.id));
-    const addChild = commands.registerCommand('template.add', (parent: HtmlNode) => this.add(parent));
+    const addChild = commands.registerCommand('template.add', (parent: HtmlNode) => this.addChild(parent));
     this.listeners = [ this.treeView, select, remove, addChild ];
     this.on('workspace', 'selectComponent', (state: ComponentState) => {
       this.state = state;
@@ -68,24 +69,28 @@ export class TemplatePlugin extends Plugin {
     this.tree.render.fire(undefined);
   }
 
-  async add(parent: HtmlNode) {
-    const options = this.state.selectorScope;
-    const base = ['h1', 'button', 'input'];
+  /** Add a child tag */
+  async addChild(parent: HtmlNode) {
+    const options = this.state.selectorScope.map(s => s.trim());
+    const base = ['ng-container', 'ng-template', 'h1', 'button', 'input'];
     const selector: string = await this.call('window', 'select', [ ...base, ...options ]);
 
     // Get attributes in []
-    // TODO: find a cleaner way to extract content of []
-    const attributeNames = selector.match(/(?<=\[).+?(?=\])/g) || [];
-    const attributes = attributeNames.map(name => ({ name, value: '' } as AttributeNode));
-    // TODO: find a cleaner way to get the name
-    const name = selector.split('[').shift();
-    // Add text
-    const children = ['h1', 'button'].includes(name)
-      ? [textNode(name)]
-      : [];
-    const node = elementNode({ name, attributes, children });
-    this.host.push(node, parent.id);
-    this.save();
+    const attrNames = selector.match(/(?<=\[).+?(?=\])/g) || [];
+    const attributes = attrNames.map(name => ({ name, value: '' } as AttributeNode));
+    // Remove all [attribute]
+    let name = selector.replace(/\[.*?\]/g, '').trim();
+    // If no name
+    if (!name) {
+      name = await this.call('window', 'select', ['ng-container', 'ng-template']);
+    }
+    if (name) {
+      // Add text
+      const children = textTags.includes(name) ? [textNode(name)] : [];
+      const node = elementNode({ name, attributes, children });
+      this.host.push(node, parent.id);
+      this.save();
+    }
   }
 
   async remove(id: string) {

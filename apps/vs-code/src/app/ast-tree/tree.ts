@@ -23,7 +23,7 @@ export class WorkspaceTree implements TreeDataProvider<WorkspaceItem> {
   }
 
   render() {
-    this.onChange.fire();
+    this.onChange.fire(undefined);
   }
 
   getTreeItem(item: WorkspaceItem) {

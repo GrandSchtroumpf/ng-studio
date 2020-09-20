@@ -1,4 +1,5 @@
-import { Plugin, Profile } from '@remixproject/engine';
+import { Profile } from '@remixproject/plugin-utils';
+import { Plugin, PluginOptions } from '@remixproject/engine';
 import { window, OpenDialogOptions, workspace } from 'vscode';
 import { relative } from 'path';
 
@@ -48,8 +49,9 @@ function getDialogOptions(options: Partial<DialogOptions>, dialogOptions: OpenDi
 
 export class WindowPlugin extends Plugin implements IWindowPlugin {
 
-  constructor() {
-    super(windowProfile)
+  constructor(options?: PluginOptions) {
+    super(windowProfile);
+    super.setOptions(options);
   }
 
   prompt(label?: string, type: 'password' | 'text' = 'text') {
